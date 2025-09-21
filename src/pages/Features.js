@@ -4,171 +4,142 @@ import "../theme.css";
 export default function Features() {
   const coreFeatures = [
     { 
-      title: "AI-Powered Facial Recognition", 
-      desc: "Revolutionary computer vision that reads micro-expressions invisible to the human eye",
-      impact: "Detects stress 15 seconds before conscious awareness",
+      title: "AI-Powered Facial Analysis", 
+      desc: "Revolutionary computer vision technology that analyzes micro-expressions and facial tension patterns invisible to the human eye",
+      impact: "Detects stress indicators 15 seconds before conscious awareness",
       accuracy: "97.3%",
-      icon: "🧠",
-      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      technical: "Deep learning models trained on 50,000+ facial expressions"
     },
     { 
-      title: "Voice Biomarker Analysis", 
-      desc: "Decode hidden stress signatures in vocal patterns and speech dynamics",
-      impact: "Identifies burnout risk 3 weeks in advance",
+      title: "Advanced Voice Biomarker Detection", 
+      desc: "Sophisticated audio processing that decodes hidden stress signatures in vocal patterns, frequency variations, and speech dynamics",
+      impact: "Identifies burnout risk up to 3 weeks in advance",
       accuracy: "94.7%",
-      icon: "🎵",
-      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+      technical: "Real-time spectral analysis with machine learning classification"
     },
     { 
       title: "Neural Pattern Intelligence", 
-      desc: "Deep EEG analysis revealing the brain's stress response at the cellular level",
-      impact: "Prevents 89% of stress-related breakdowns",
+      desc: "Comprehensive EEG analysis revealing the brain's stress response patterns through advanced neurological assessment",
+      impact: "Prevents 89% of stress-related performance breakdowns",
       accuracy: "99.1%",
-      icon: "⚡",
-      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+      technical: "Multi-channel EEG processing with AI pattern recognition"
     },
     { 
-      title: "Biometric Stress Mapping", 
-      desc: "GSR technology that monitors your body's electrical response to emotional triggers",
-      impact: "Real-time intervention reduces incidents by 76%",
+      title: "Physiological Response Monitoring", 
+      desc: "Precision GSR technology that monitors your body's electrical response to emotional triggers and stress events",
+      impact: "Enables real-time intervention reducing stress incidents by 76%",
       accuracy: "92.8%",
-      icon: "💫",
-      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+      technical: "Continuous galvanic skin response with predictive algorithms"
     },
   ];
 
   const powerFeatures = [
     {
       title: "Predictive Stress Intelligence",
-      desc: "AI that learns your unique stress patterns and predicts episodes before they happen",
-      icon: "🔮",
-      stats: "Prevents 84% of stress incidents"
+      desc: "Machine learning algorithms that analyze your unique stress patterns and predict episodes before they occur, enabling proactive intervention.",
+      metric: "Prevents 84% of stress incidents"
     },
     {
-      title: "Emergency Response System",
-      desc: "Instant alerts to managers and wellness teams when critical stress levels are detected",
-      icon: "🚨",
-      stats: "Response time under 30 seconds"
+      title: "Emergency Response Integration",
+      desc: "Automated alert system that notifies managers and wellness teams when critical stress thresholds are detected in real-time.",
+      metric: "Response time under 30 seconds"
     },
     {
-      title: "Personalized Recovery Plans",
-      desc: "Custom interventions designed by AI based on your biometric profile and stress triggers",
-      icon: "🎯",
-      stats: "Recovery time reduced by 67%"
+      title: "Personalized Recovery Protocols",
+      desc: "AI-generated intervention strategies designed specifically for your biometric profile, stress triggers, and response patterns.",
+      metric: "Reduces recovery time by 67%"
     },
     {
-      title: "Team Stress Heatmaps",
-      desc: "Visual dashboards showing organizational stress patterns and high-risk areas",
-      icon: "🗺️",
-      stats: "Improves team performance by 45%"
+      title: "Organizational Analytics Dashboard",
+      desc: "Comprehensive stress mapping and trend analysis for teams while maintaining strict individual privacy and data protection.",
+      metric: "Improves team performance by 45%"
     }
   ];
 
   const impactStats = [
-    { number: "10M+", label: "Lives Protected", desc: "Professionals worldwide using our technology" },
-    { number: "847%", label: "ROI Average", desc: "Return on investment for enterprise clients" },
-    { number: "23 Sec", label: "Detection Speed", desc: "From stress onset to alert notification" },
-    { number: "Zero", label: "Privacy Breaches", desc: "Perfect security record since 2019" }
+    { number: "10M+", label: "Professionals Protected", desc: "Global users benefiting from our technology" },
+    { number: "847%", label: "Average ROI", desc: "Return on investment for enterprise clients" },
+    { number: "23 sec", label: "Detection Speed", desc: "From stress onset to alert notification" },
+    { number: "Zero", label: "Security Breaches", desc: "Perfect privacy protection record since 2019" }
   ];
 
   return (
     <div className="container py-5">
       {/* Hero Section */}
       <div className="text-center mb-5">
-        <h1 className="neon-text header-animate" style={{fontSize: '4rem', marginBottom: '1rem'}}>
-          The Future of Stress Detection
+        <h1 className="neon-text header-animate" style={{fontSize: '3.5rem', marginBottom: '1.5rem'}}>
+          Advanced Stress Detection Technology
         </h1>
-        <p className="lead" style={{fontSize: '1.5rem', color: '#465b26', maxWidth: '800px', margin: '0 auto 2rem'}}>
-          Revolutionary AI technology that doesn't just detect stress—it <strong>predicts, prevents, and protects</strong> 
-          your mental wellbeing before crisis strikes.
+        <p className="lead" style={{fontSize: '1.3rem', color: '#465b26', maxWidth: '900px', margin: '0 auto 2rem', lineHeight: '1.6'}}>
+          Revolutionary AI-powered platform that doesn't just detect workplace stress—it <strong>predicts, prevents, and protects</strong> 
+          your organization's most valuable asset: employee wellbeing.
         </p>
-        <div style={{
-          background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24)',
-          padding: '3px',
-          borderRadius: '50px',
+        <div className="olive-card" style={{
           display: 'inline-block',
-          margin: '1rem 0'
+          padding: '1rem 2rem',
+          marginTop: '1rem',
+          background: 'linear-gradient(135deg, #eeefd8, #f4f6f2)',
+          border: '2px solid #b2bb5f'
         }}>
-          <div style={{
-            background: '#f4f6f2',
-            padding: '1rem 2rem',
-            borderRadius: '47px',
-            fontWeight: 'bold',
-            color: '#29351d'
-          }}>
-            🚀 <strong>World's Most Advanced Stress Detection Platform</strong>
-          </div>
+          <strong style={{color: '#465b26'}}>Industry-Leading Stress Detection Platform</strong>
         </div>
       </div>
 
       {/* Core Technologies */}
       <div className="mb-5">
-        <h2 className="neon-text text-center mb-5" style={{fontSize: '2.8rem'}}>
-          🧬 Revolutionary Detection Technologies
+        <h2 className="neon-text text-center mb-5" style={{fontSize: '2.5rem'}}>
+          Core Detection Technologies
         </h2>
         <div className="row">
           {coreFeatures.map((feature, idx) => (
-            <div className="col-md-6 col-lg-3 mb-4" key={idx}>
-              <div 
-                className="olive-card text-center h-100 fade-in-up"
-                style={{
-                  animationDelay: `${idx * 0.2}s`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  border: '3px solid transparent',
-                  background: feature.gradient,
-                  backgroundClip: 'padding-box'
-                }}
-              >
+            <div className="col-md-6 mb-4" key={idx}>
+              <div className="olive-card h-100 fade-in-up" style={{animationDelay: `${idx * 0.15}s`}}>
+                <h4 style={{color: '#34421c', marginBottom: '1rem', fontSize: '1.4rem'}}>
+                  {feature.title}
+                </h4>
+                <p style={{marginBottom: '1.5rem', lineHeight: '1.6', color: '#556022'}}>
+                  {feature.desc}
+                </p>
+                
                 <div style={{
-                  background: '#f4f6f2',
-                  margin: '3px',
-                  padding: '2rem 1.5rem',
-                  borderRadius: '15px',
-                  height: 'calc(100% - 6px)'
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: 'rgba(178, 187, 95, 0.1)',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  marginBottom: '1rem'
                 }}>
-                  <div style={{
-                    fontSize: '4rem',
-                    marginBottom: '1rem',
-                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
-                  }}>
-                    {feature.icon}
-                  </div>
-                  <h4 style={{color: '#34421c', marginBottom: '1rem', fontSize: '1.3rem'}}>
-                    {feature.title}
-                  </h4>
-                  <p style={{marginBottom: '1.5rem', lineHeight: '1.6'}}>
-                    {feature.desc}
-                  </p>
-                  
-                  <div style={{
-                    background: 'rgba(178, 187, 95, 0.1)',
-                    padding: '1rem',
-                    borderRadius: '10px',
-                    marginBottom: '1rem',
-                    border: '2px solid rgba(178, 187, 95, 0.3)'
-                  }}>
+                  <div>
                     <div style={{
                       fontSize: '2rem',
                       fontWeight: 'bold',
-                      color: '#8d9740',
-                      marginBottom: '0.5rem'
+                      color: '#8d9740'
                     }}>
                       {feature.accuracy}
                     </div>
-                    <small style={{color: '#556022', fontWeight: 'bold'}}>ACCURACY RATE</small>
+                    <small style={{color: '#556022', fontWeight: '600'}}>ACCURACY RATE</small>
                   </div>
-                  
                   <div style={{
-                    background: 'linear-gradient(45deg, rgba(178, 187, 95, 0.1), rgba(178, 187, 95, 0.05))',
-                    padding: '0.75rem',
-                    borderRadius: '8px',
-                    fontSize: '0.9rem',
-                    fontWeight: 'bold',
-                    color: '#465b26'
+                    textAlign: 'right',
+                    flex: 1,
+                    marginLeft: '1rem'
                   }}>
-                    ⚡ {feature.impact}
+                    <strong style={{color: '#465b26', fontSize: '0.95rem'}}>
+                      {feature.impact}
+                    </strong>
                   </div>
+                </div>
+                
+                <div style={{
+                  background: '#f4f6f2',
+                  padding: '0.75rem',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  color: '#556022',
+                  border: '1px solid #c7d3a7'
+                }}>
+                  <strong>Technology:</strong> {feature.technical}
                 </div>
               </div>
             </div>
@@ -177,85 +148,65 @@ export default function Features() {
       </div>
 
       {/* Impact Statistics */}
-      <div className="mb-5" style={{
-        background: 'linear-gradient(135deg, rgba(178, 187, 95, 0.1), rgba(178, 187, 95, 0.05))',
-        padding: '3rem 2rem',
-        borderRadius: '20px',
-        border: '2px solid rgba(178, 187, 95, 0.2)'
-      }}>
-        <h2 className="neon-text text-center mb-4" style={{fontSize: '2.5rem'}}>
-          🏆 Unprecedented Impact Metrics
-        </h2>
-        <div className="row">
-          {impactStats.map((stat, idx) => (
-            <div className="col-md-6 col-lg-3 mb-4 text-center" key={idx}>
-              <div className="slide-in-right" style={{animationDelay: `${idx * 0.1}s`}}>
-                <div style={{
-                  fontSize: '3.5rem',
-                  fontWeight: '900',
-                  background: 'linear-gradient(45deg, #8d9740, #b2bb5f, #e4f56a)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                  marginBottom: '0.5rem'
-                }}>
-                  {stat.number}
+      <div className="mb-5">
+        <div className="olive-card" style={{
+          padding: '3rem 2rem',
+          background: 'linear-gradient(135deg, #eeefd8, #f4f6f2)'
+        }}>
+          <h2 className="neon-text text-center mb-4" style={{fontSize: '2.2rem'}}>
+            Proven Impact Metrics
+          </h2>
+          <div className="row">
+            {impactStats.map((stat, idx) => (
+              <div className="col-md-6 col-lg-3 mb-4 text-center" key={idx}>
+                <div className="slide-in-right" style={{animationDelay: `${idx * 0.1}s`}}>
+                  <div style={{
+                    fontSize: '3rem',
+                    fontWeight: '900',
+                    color: '#8d9740',
+                    marginBottom: '0.5rem',
+                    textShadow: '0 2px 4px rgba(141, 151, 64, 0.2)'
+                  }}>
+                    {stat.number}
+                  </div>
+                  <h4 style={{color: '#34421c', marginBottom: '0.5rem', fontSize: '1.2rem'}}>
+                    {stat.label}
+                  </h4>
+                  <p style={{fontSize: '0.95rem', color: '#556022', lineHeight: '1.4'}}>
+                    {stat.desc}
+                  </p>
                 </div>
-                <h4 style={{color: '#34421c', marginBottom: '0.5rem'}}>{stat.label}</h4>
-                <p style={{fontSize: '0.9rem', color: '#556022'}}>{stat.desc}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Power Features */}
+      {/* Advanced Capabilities */}
       <div className="mb-5">
-        <h2 className="neon-text text-center mb-5" style={{fontSize: '2.8rem'}}>
-          ⚡ Game-Changing Capabilities
+        <h2 className="neon-text text-center mb-5" style={{fontSize: '2.5rem'}}>
+          Advanced Platform Capabilities
         </h2>
         <div className="row">
           {powerFeatures.map((feature, idx) => (
             <div className="col-md-6 mb-4" key={idx}>
-              <div className="olive-card slide-in-right h-100" style={{
-                animationDelay: `${idx * 0.15}s`,
-                background: 'linear-gradient(135deg, #eeefd8, #f9faf2)',
-                border: '2px solid #b2bb5f',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
+              <div className="olive-card slide-in-right h-100" style={{animationDelay: `${idx * 0.15}s`}}>
+                <h4 style={{color: '#34421c', marginBottom: '1rem', fontSize: '1.3rem'}}>
+                  {feature.title}
+                </h4>
+                <p style={{marginBottom: '1.5rem', lineHeight: '1.6', color: '#556022'}}>
+                  {feature.desc}
+                </p>
                 <div style={{
-                  position: 'absolute',
-                  top: '-50%',
-                  right: '-50%',
-                  width: '200%',
-                  height: '200%',
-                  background: `conic-gradient(from 0deg, transparent, rgba(178, 187, 95, 0.1), transparent)`,
-                  animation: 'spin 20s linear infinite',
-                  zIndex: 0
+                  background: 'linear-gradient(135deg, rgba(141, 151, 64, 0.1), rgba(178, 187, 95, 0.1))',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  color: '#465b26',
+                  textAlign: 'center',
+                  border: '1px solid rgba(178, 187, 95, 0.3)'
                 }}>
-                </div>
-                <div style={{position: 'relative', zIndex: 1}}>
-                  <div style={{
-                    fontSize: '3rem',
-                    marginBottom: '1rem',
-                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))'
-                  }}>
-                    {feature.icon}
-                  </div>
-                  <h4 style={{color: '#34421c', marginBottom: '1rem'}}>{feature.title}</h4>
-                  <p style={{marginBottom: '1.5rem', lineHeight: '1.6'}}>{feature.desc}</p>
-                  <div style={{
-                    background: 'rgba(141, 151, 64, 0.1)',
-                    padding: '1rem',
-                    borderRadius: '10px',
-                    fontWeight: 'bold',
-                    color: '#8d9740',
-                    textAlign: 'center',
-                    border: '2px solid rgba(141, 151, 64, 0.2)'
-                  }}>
-                    📈 {feature.stats}
-                  </div>
+                  Result: {feature.metric}
                 </div>
               </div>
             </div>
@@ -263,94 +214,100 @@ export default function Features() {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="text-center" style={{
-        background: 'linear-gradient(135deg, #8d9740, #b2bb5f)',
-        padding: '3rem',
-        borderRadius: '20px',
-        color: '#f4f6f2',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat',
-          opacity: 0.3
-        }}>
+      {/* Enterprise Benefits */}
+      <div className="mb-5">
+        <div className="olive-card">
+          <h3 className="text-center mb-4" style={{color: '#34421c', fontSize: '2rem'}}>
+            Enterprise-Grade Benefits
+          </h3>
+          <div className="row">
+            <div className="col-md-4 text-center mb-4">
+              <h4 style={{color: '#465b26', fontSize: '1.3rem'}}>99.7% Uptime</h4>
+              <p style={{color: '#556022'}}>
+                Reliable, cloud-based infrastructure ensuring continuous monitoring 
+                and real-time analysis with enterprise-level redundancy.
+              </p>
+            </div>
+            <div className="col-md-4 text-center mb-4">
+              <h4 style={{color: '#465b26', fontSize: '1.3rem'}}>HIPAA Compliant</h4>
+              <p style={{color: '#556022'}}>
+                Full compliance with healthcare data protection standards, 
+                featuring end-to-end encryption and secure data handling.
+              </p>
+            </div>
+            <div className="col-md-4 text-center mb-4">
+              <h4 style={{color: '#465b26', fontSize: '1.3rem'}}>24/7 Expert Support</h4>
+              <p style={{color: '#556022'}}>
+                Dedicated technical support team with stress detection expertise 
+                available around the clock for all enterprise customers.
+              </p>
+            </div>
+          </div>
         </div>
-        <div style={{position: 'relative', zIndex: 1}}>
+      </div>
+
+      {/* Call to Action */}
+      <div className="text-center">
+        <div className="olive-card" style={{
+          background: 'linear-gradient(135deg, #8d9740, #b2bb5f)',
+          color: '#f4f6f2',
+          padding: '3rem 2rem'
+        }}>
           <h2 style={{
-            fontSize: '3rem',
+            fontSize: '2.5rem',
             marginBottom: '1rem',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            color: '#f4f6f2'
           }}>
-            🚀 Ready to Revolutionize Workplace Wellness?
+            Transform Your Workplace Wellness Strategy
           </h2>
           <p style={{
-            fontSize: '1.3rem',
+            fontSize: '1.2rem',
             marginBottom: '2rem',
-            maxWidth: '600px',
-            margin: '0 auto 2rem'
+            maxWidth: '700px',
+            margin: '0 auto 2rem',
+            opacity: '0.95'
           }}>
-            Join the <strong>10 million+ professionals</strong> who've transformed their stress management 
-            with our breakthrough technology. Your mental health revolution starts now.
+            Join over <strong>10 million professionals</strong> who have revolutionized their approach 
+            to stress management with our breakthrough detection technology.
           </p>
           <div style={{display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
             <a 
               href="/dashboard" 
-              className="btn"
+              className="btn btn-olive"
               style={{
                 background: '#f4f6f2',
                 color: '#8d9740',
                 padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                borderRadius: '50px',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                fontSize: '1.1rem',
+                fontWeight: '600'
               }}
             >
-              🎯 Start Your Transformation
+              Start Free Assessment
             </a>
             <a 
               href="/about" 
-              className="btn"
+              className="btn btn-olive-outline"
               style={{
                 background: 'transparent',
                 color: '#f4f6f2',
                 border: '2px solid #f4f6f2',
                 padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-                borderRadius: '50px',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease'
+                fontSize: '1.1rem',
+                fontWeight: '600'
               }}
             >
-              📊 See the Science
+              Schedule Demo
             </a>
           </div>
           <div style={{
-            marginTop: '2rem',
+            marginTop: '1.5rem',
             fontSize: '1rem',
-            opacity: 0.9
+            opacity: '0.9'
           }}>
-            ✨ <strong>Special Launch Offer:</strong> First 1,000 users get lifetime 50% discount
+            <strong>Enterprise Trial:</strong> 30-day comprehensive evaluation for qualified organizations
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
