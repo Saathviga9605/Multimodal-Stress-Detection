@@ -1,43 +1,85 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import "../theme.css";
 
 export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark neon-border">
+    <nav className="navbar">
       <div className="container">
-        <Link className="navbar-brand neon-text fw-bold" to="/">StressDetect</Link>
+        <Link className="navbar-brand" to="/">
+          StressConnect
+        </Link>
 
         <button
           className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
+          onClick={toggleMenu}
           aria-label="Toggle navigation"
         >
-          <span className="navbar-toggler-icon"></span>
+          <div className="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto d-flex align-items-center">
-            <li className="nav-item">
-              <Link className="nav-link neon-link" to="/">Home</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link neon-link" to="/about">About</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link neon-link" to="/features">Features</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link neon-link" to="/impact">Impact</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link btn btn-neon ms-3 px-3" to="/dashboard">Dashboard</Link>
-            </li>
-          </ul>
-        </div>
+        <ul className={`navbar-nav ${isMenuOpen ? 'show' : ''}`}>
+          <li className="nav-item">
+            <Link 
+              className={`nav-link neon-link ${isActive('/') ? 'active' : ''}`} 
+              to="/"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Home
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link 
+              className={`nav-link neon-link ${isActive('/about') ? 'active' : ''}`} 
+              to="/about"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link 
+              className={`nav-link neon-link ${isActive('/features') ? 'active' : ''}`} 
+              to="/features"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Features
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link 
+              className={`nav-link neon-link ${isActive('/impact') ? 'active' : ''}`} 
+              to="/impact"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Impact
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link 
+              className="nav-link btn btn-neon ms-3 px-3" 
+              to="/dashboard"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Dashboard
+            </Link>
+          </li>
+        </ul>
       </div>
     </nav>
   );
