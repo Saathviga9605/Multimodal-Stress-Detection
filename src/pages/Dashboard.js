@@ -11,14 +11,31 @@ export default function Dashboard() {
   const [voiceFile, setVoiceFile] = useState(null);
   const [voicePreviewUrl, setVoicePreviewUrl] = useState(null);
 
-  const handleFaceUpload = (e) => {
+  const handleFaceUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        setFaceResult('⚠️ Please upload a valid image file (JPG, JPEG, PNG).');
+        return;
+      }
       setFaceResult("Analyzing facial expressions...");
-      setTimeout(() => {
-        setFaceResult("✅ Analysis Complete - Stress Level: 42% (Moderate)");
-        calculateOverallStress();
-      }, 2000);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await fetch('http://localhost:5000/api/face/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+          setFaceResult(`✅ Analysis Complete - Facial Stress: ${data.percentage}% (${data.stress_level})`);
+          calculateOverallStress();
+        } else {
+          setFaceResult(`⚠️ Error: ${data.message}`);
+        }
+      } catch (error) {
+        setFaceResult(`⚠️ Error: Network error - ${error.message}. Is the server running?`);
+      }
     }
   };
 
