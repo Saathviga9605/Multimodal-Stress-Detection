@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../theme.css";
 
 export default function Dashboard() {
@@ -8,12 +8,13 @@ export default function Dashboard() {
   const [gsrResult, setGsrResult] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [overallStress, setOverallStress] = useState(null);
+  const [voiceFile, setVoiceFile] = useState(null);
+  const [voicePreviewUrl, setVoicePreviewUrl] = useState(null);
 
   const handleFaceUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFaceResult("Analyzing facial expressions...");
-      // Simulate analysis
       setTimeout(() => {
         setFaceResult("✅ Analysis Complete - Stress Level: 42% (Moderate)");
         calculateOverallStress();
@@ -21,16 +22,76 @@ export default function Dashboard() {
     }
   };
 
-  const handleVoiceRecord = () => {
+  const handleVoiceRecord = async () => {
     setIsRecording(true);
     setVoiceResult("🎤 Recording voice sample...");
-    
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/voice/record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration: 3 }),
+      });
+      const data = await response.json();
       setIsRecording(false);
-      setVoiceResult("✅ Analysis Complete - Vocal Stress: 38% (Low-Moderate)");
-      calculateOverallStress();
-    }, 3000);
+      if (data.status === 'success') {
+        setVoiceResult(`✅ Analysis Complete - Vocal Stress: ${data.percentage}% (${data.stress_level})`);
+        calculateOverallStress();
+      } else {
+        setVoiceResult(`⚠️ Error: ${data.message}`);
+      }
+    } catch (error) {
+      setIsRecording(false);
+      setVoiceResult(`⚠️ Error: Network error - ${error.message}. Is the server running?`);
+    }
   };
+
+  const handleVoiceUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('audio/')) {
+        setVoiceResult('⚠️ Please upload a valid audio file (WAV or MP3).');
+        return;
+      }
+      setVoiceFile(file);
+      setVoiceResult('✅ Audio file selected — ready to analyze');
+      const url = URL.createObjectURL(file);
+      setVoicePreviewUrl(url);
+    }
+  };
+
+  const handleVoiceAnalyze = async () => {
+    if (!voiceFile) {
+      setVoiceResult('⚠️ No audio file selected. Please upload a file first.');
+      return;
+    }
+    setVoiceResult('Analyzing uploaded audio sample...');
+    try {
+      const formData = new FormData();
+      formData.append('file', voiceFile);
+      const response = await fetch('http://localhost:5000/api/voice/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setVoiceResult(`✅ Analysis Complete - Vocal Stress: ${data.percentage}% (${data.stress_level})`);
+        calculateOverallStress();
+      } else {
+        setVoiceResult(`⚠️ Error: ${data.message}`);
+      }
+    } catch (error) {
+      setVoiceResult(`⚠️ Error: Network error - ${error.message}. Is the server running?`);
+    }
+  };
+
+  useEffect(() => {
+    const current = voicePreviewUrl;
+    return () => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+    };
+  }, [voicePreviewUrl]);
 
   const handleEEGUpload = (e) => {
     const file = e.target.files[0];
@@ -55,7 +116,6 @@ export default function Dashboard() {
   };
 
   const calculateOverallStress = () => {
-    // Simulate overall stress calculation
     setTimeout(() => {
       setOverallStress({
         level: 42,
@@ -66,9 +126,9 @@ export default function Dashboard() {
   };
 
   const getStressColor = (level) => {
-    if (level < 30) return "#8d9740"; // Low - Green
-    if (level < 60) return "#e4a853"; // Moderate - Yellow  
-    return "#c74545"; // High - Red
+    if (level < 30) return "#8d9740";
+    if (level < 60) return "#e4a853";
+    return "#c74545";
   };
 
   return (
@@ -78,7 +138,6 @@ export default function Dashboard() {
         <p className="lead">Real-time multi-modal stress analysis and monitoring</p>
       </div>
 
-      {/* Overall Stress Display */}
       {overallStress && (
         <div className="row mb-5">
           <div className="col-12">
@@ -110,9 +169,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Detection Modules */}
       <div className="row">
-        {/* Facial Stress Detection */}
         <div className="col-md-6 mb-4">
           <div className="neon-card">
             <div className="text-center mb-3">
@@ -120,7 +177,6 @@ export default function Dashboard() {
             </div>
             <h4>Facial Stress Detection</h4>
             <p>Upload a photo or use your webcam to analyze facial expressions for stress indicators.</p>
-            
             <div className="mb-3">
               <input 
                 type="file" 
@@ -132,7 +188,6 @@ export default function Dashboard() {
                 📹 Open Webcam
               </button>
             </div>
-            
             {faceResult && (
               <div style={{
                 background: 'rgba(178, 187, 95, 0.1)',
@@ -146,15 +201,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Voice Stress Detection */}
         <div className="col-md-6 mb-4">
           <div className="neon-card">
             <div className="text-center mb-3">
               <span style={{fontSize: '3rem'}}>🎤</span>
             </div>
             <h4>Voice Stress Detection</h4>
-            <p>Record a voice sample to analyze vocal patterns and stress markers in speech.</p>
-            
+            <p>Record a voice sample or upload an audio file to analyze vocal patterns for stress markers.</p>
             <div className="mb-3">
               <button 
                 className={`btn ${isRecording ? 'btn-outline-neon' : 'btn-neon'} w-100`}
@@ -164,7 +217,23 @@ export default function Dashboard() {
                 {isRecording ? '🔴 Recording...' : '🎙️ Start Recording'}
               </button>
             </div>
-            
+            <div className="mb-3">
+              <label className="form-label">Or upload an audio file</label>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={handleVoiceUpload}
+                className="form-control mb-2"
+              />
+              {voicePreviewUrl && (
+                <div style={{marginBottom: '0.75rem'}}>
+                  <audio controls src={voicePreviewUrl} style={{width: '100%'}} />
+                </div>
+              )}
+              <button className="btn btn-outline-neon w-100" onClick={handleVoiceAnalyze}>
+                Analyze Uploaded Audio
+              </button>
+            </div>
             {voiceResult && (
               <div style={{
                 background: 'rgba(178, 187, 95, 0.1)',
@@ -178,7 +247,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* EEG Data Analysis */}
         <div className="col-md-6 mb-4">
           <div className="neon-card">
             <div className="text-center mb-3">
@@ -186,7 +254,6 @@ export default function Dashboard() {
             </div>
             <h4>EEG Data Analysis</h4>
             <p>Upload EEG data files to analyze brainwave patterns and neurological stress indicators.</p>
-            
             <div className="mb-3">
               <input 
                 type="file" 
@@ -198,7 +265,6 @@ export default function Dashboard() {
                 Supported formats: EDF, CSV, TXT
               </small>
             </div>
-            
             {eegResult && (
               <div style={{
                 background: 'rgba(178, 187, 95, 0.1)',
@@ -212,7 +278,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* GSR Data Analysis */}
         <div className="col-md-6 mb-4">
           <div className="neon-card">
             <div className="text-center mb-3">
@@ -220,7 +285,6 @@ export default function Dashboard() {
             </div>
             <h4>GSR Data Analysis</h4>
             <p>Monitor Galvanic Skin Response data to evaluate physiological stress responses.</p>
-            
             <div className="mb-3">
               <input 
                 type="file" 
@@ -232,7 +296,6 @@ export default function Dashboard() {
                 Supported formats: CSV, TXT, JSON
               </small>
             </div>
-            
             {gsrResult && (
               <div style={{
                 background: 'rgba(178, 187, 95, 0.1)',
@@ -247,7 +310,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Instructions */}
       <div className="row mt-5">
         <div className="col-12">
           <div className="neon-card">
