@@ -22,9 +22,6 @@ class MultimodalStressDetector:
         self.is_trained = False
     
     def extract_facial_features(self, image_path):
-        """
-        Extract facial features from image - MUST return 84 features to match training
-        """
         try:
             img = cv2.imread(image_path)
             if img is None:
@@ -108,9 +105,6 @@ class MultimodalStressDetector:
             return np.random.randn(84) * 0.1
     
     def extract_voice_features(self, audio_path):
-        """
-        Extract voice features from audio - MUST return 140 features to match training
-        """
         try:
             y, sr = librosa.load(audio_path, duration=30)
             
@@ -191,9 +185,6 @@ class MultimodalStressDetector:
             return np.random.randn(140) * 0.1
     
     def extract_physiological_features(self, eeg_data=None, gsr_data=None):
-        """
-        Extract physiological features - MUST return 132 features to match training
-        """
         features = []
         
         # EEG features (66 features)
