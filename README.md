@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# Multimodal Stress Detection System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An intelligent stress detection system for workspace professionals using facial expressions, voice patterns, and physiological signals (EEG, GSR) through advanced multimodal fusion techniques.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Multimodal Analysis**: Combines facial (webcam/upload), vocal, and physiological data
+- **Real-time Detection**: Instant webcam capture and analysis
+- **Decision-Level Fusion**: SVM-based fusion with multiple strategies (Average, Sum, Product, Maximum)
+- **Individual Modality Insights**: View predictions from each modality separately
+- **Flexible Input**: Works with any combination of 1, 2, or 3 modalities
+- **RESTful API**: Flask backend with CORS support
+- **Modern Dashboard**: Responsive React interface
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Backend Setup
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+# Clone repository
+git clone https://github.com/yourusername/stress-detection.git
+cd stress-detection
 
-### `npm test`
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Install dependencies
+pip install flask flask-cors numpy pandas scikit-learn scipy opencv-python librosa soundfile imbalanced-learn joblib
 
-### `npm run build`
+# Train model
+python train_model.py
+# Choose option 2 for demo model or option 1 for dataset training
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Start backend
+python app.py
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Frontend Setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# Install Node.js dependencies
+npm install lucide-react
 
-### `npm run eject`
+# Start development server
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Usage
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Quick Start
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Start Flask backend: `python app.py`
+2. Open dashboard at `http://localhost:3000`
+3. Upload face image, voice recording, or enter EEG/GSR data
+4. Click "Analyze Stress Level"
+5. View results with overall stress percentage and individual modality predictions
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### API Example
 
-## Learn More
+```bash
+curl -X POST http://localhost:5000/api/multimodal/analyze \
+  -F "face_image=@photo.jpg" \
+  -F "voice_audio=@audio.wav" \
+  -F "eeg_data=0.5,0.7,0.6,0.8" \
+  -F "gsr_data=2.1,2.3,2.2,2.4"
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Python Example
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```python
+from model import MultimodalStressDetector
 
-### Code Splitting
+model = MultimodalStressDetector()
+model.load_model('multimodal_stress_model.pkl')
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+facial_features = model.extract_facial_features('photo.jpg')
+voice_features = model.extract_voice_features('audio.wav')
+phys_features = model.extract_physiological_features(
+    eeg_data=[0.5, 0.7, 0.6, 0.8],
+    gsr_data=[2.1, 2.3, 2.2, 2.4]
+)
 
-### Analyzing the Bundle Size
+result = model.predict(
+    facial_features=facial_features,
+    voice_features=voice_features,
+    phys_features=phys_features,
+    fusion='average'
+)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+print(f"Stress Level: {result['stress_level']} ({result['percentage']:.1f}%)")
+```
 
-### Making a Progressive Web App
+## Model Details
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Architecture
+- **Algorithm**: Support Vector Machines (SVM) with RBF kernel
+- **Fusion**: Decision-level fusion using Average rule
+- **Preprocessing**: StandardScaler + PCA (95% variance)
+- **Class Balancing**: SMOTE resampling
 
-### Advanced Configuration
+### Features
+- **Facial (20 dims)**: Face dimensions, intensity stats, texture, eye detection, color features
+- **Voice (36 dims)**: MFCCs, spectral centroid/rolloff, zero crossing rate, RMS energy, pitch
+- **Physiological (12 dims)**: EEG and GSR statistics (mean, std, min, max, skewness, kurtosis)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### API Endpoints
 
-### Deployment
+```
+GET  /api/health                  # Health check
+POST /api/multimodal/analyze      # Multimodal analysis
+POST /api/face/upload             # Face-only analysis
+POST /api/voice/upload            # Voice-only analysis
+POST /api/webcam/capture          # Webcam capture
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Project Structure
 
-### `npm run build` fails to minify
+```
+stress-detection/
+├── model.py              # Core ML model
+├── app.py                # Flask API
+├── train_model.py        # Training script
+├── requirements.txt      # Dependencies
+├── frontend/
+│   └── src/
+│       └── Dashboard.js  # React UI
+└── multimodal_stress_model.pkl
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/YourFeature`
+3. Commit changes: `git commit -m 'Add YourFeature'`
+4. Push to branch: `git push origin feature/YourFeature`
+5. Submit pull request
+
+## License
+
+MIT License - see LICENSE file for details.
+
+---
+
+**Contributions**: Saathviga B, Kaviya R 
