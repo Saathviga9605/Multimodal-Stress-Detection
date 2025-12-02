@@ -129,13 +129,6 @@ print(f"Stress Level: {result['stress_level']} ({result['percentage']:.1f}%)")
 - **Voice (36 dims)**: MFCCs, spectral centroid/rolloff, zero crossing rate, RMS energy, pitch
 - **Physiological (12 dims)**: EEG and GSR statistics (mean, std, min, max, skewness, kurtosis)
 
-### Performance
-| Metric | Score |
-|--------|-------|
-| Accuracy | 62-68% |
-| F1-Score | 62-68% |
-| Best Fusion | Average/Sum Rule |
-
 ### API Endpoints
 
 ```
@@ -171,7 +164,5 @@ stress-detection/
 ## License
 
 MIT License - see LICENSE file for details.
-
----
 
 **Contributors**: Saathviga B, Kaviya R
