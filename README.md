@@ -99,10 +99,42 @@ print(f"Stress Level: {result['stress_level']} ({result['percentage']:.1f}%)")
 - **Preprocessing**: StandardScaler + PCA (95% variance)
 - **Class Balancing**: SMOTE resampling
 
+### Methodology
+
+**Feature Extraction:**
+- **Facial Analysis**: OpenCV Haar Cascades for face detection, extracting facial dimensions, texture features (Sobel gradients), eye detection, and color statistics
+- **Voice Analysis**: Librosa for audio processing, extracting MFCCs, spectral features, pitch, and energy patterns
+- **Physiological Analysis**: Statistical feature extraction from EEG and GSR time-series data
+
+**Machine Learning Pipeline:**
+1. **Individual Modality Training**: Three separate SVM classifiers trained independently on facial, voice, and physiological features
+2. **Feature Engineering**: StandardScaler normalization followed by PCA dimensionality reduction (95% variance retained)
+3. **Classification Models Compared**:
+   - Support Vector Machines (SVM) - **Selected (Best Performance)**
+   - Random Forest Classifier
+   - Convolutional Neural Networks (CNN) - Explored for image-based features
+   - K-Nearest Neighbors (KNN)
+   - Multi-Layer Perceptron (MLP)
+4. **Decision-Level Fusion**: Probability outputs from each SVM combined using fusion rules (Average, Sum, Product, Maximum)
+5. **Final Prediction**: Weighted combination of modality predictions produces overall stress classification
+
+**Why SVM?**
+- Superior performance on limited datasets (62-68% F1-score)
+- Robust to overfitting with RBF kernel
+- Efficient training and inference times
+- Better generalization compared to CNN on our dataset size
+
 ### Features
 - **Facial (20 dims)**: Face dimensions, intensity stats, texture, eye detection, color features
 - **Voice (36 dims)**: MFCCs, spectral centroid/rolloff, zero crossing rate, RMS energy, pitch
 - **Physiological (12 dims)**: EEG and GSR statistics (mean, std, min, max, skewness, kurtosis)
+
+### Performance
+| Metric | Score |
+|--------|-------|
+| Accuracy | 62-68% |
+| F1-Score | 62-68% |
+| Best Fusion | Average/Sum Rule |
 
 ### API Endpoints
 
@@ -142,4 +174,4 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Contributions**: Saathviga B, Kaviya R 
+**Contributors**: Saathviga B, Kaviya R
