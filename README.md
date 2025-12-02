@@ -165,4 +165,5 @@ stress-detection/
 
 MIT License - see LICENSE file for details.
 
-**Contributors**: Saathviga B, Kaviya R
+## Contributors
+ Saathviga B, Kaviya R
