@@ -451,6 +451,20 @@ export default function Dashboard() {
     };
   }, [voicePreviewUrl, facePreview]);
 
+  useEffect(() => {
+    if (!webcamActive || !videoRef.current || !streamRef.current) {
+      return;
+    }
+
+    const video = videoRef.current;
+    video.srcObject = streamRef.current;
+    video.muted = true;
+    video.playsInline = true;
+    video.play().catch(() => {
+      // Some browsers require metadata/user gesture before playback.
+    });
+  }, [webcamActive]);
+
   const parseDelimitedSeries = (text, keyName = "value") => {
     const values = (text || "")
       .split(/[\s,;]+/)
@@ -741,27 +755,29 @@ export default function Dashboard() {
   };
 
   const startWebcam = async () => {
+    let stream = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
           width: { ideal: 960 },
           height: { ideal: 540 },
           facingMode: "user",
         }
       });
+
+      streamRef.current = stream;
+      setWebcamActive(true);
+
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-        videoRef.current.playsInline = true;
-        try {
-          await videoRef.current.play();
-        } catch (_err) {
-          // Some browsers defer play until metadata loads.
-        }
-        streamRef.current = stream;
-        setWebcamActive(true);
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.play().catch(() => {});
       }
     } catch (err) {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      streamRef.current = null;
+      setWebcamActive(false);
       setError('Could not access webcam: ' + err.message);
     }
   };
