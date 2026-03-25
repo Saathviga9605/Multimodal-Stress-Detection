@@ -7,7 +7,7 @@ export default function About() {
       <div className="text-center mb-5">
         <h2 className="neon-text">About StressConnect</h2>
         <p className="lead">
-          Revolutionizing workplace wellness through intelligent stress detection technology
+          Advancing personal wellbeing through intelligent stress detection technology
         </p>
       </div>
 
@@ -16,15 +16,15 @@ export default function About() {
           <div className="neon-card fade-in-up">
             <h3>Our Mission</h3>
             <p>
-              StressConnect is dedicated to creating healthier work environments by providing 
+              StressConnect is dedicated to helping people build healthier daily routines by providing
               real-time stress detection and monitoring solutions. We believe that early 
               intervention is key to preventing burnout and maintaining optimal mental health 
-              in professional settings.
+              in everyday life.
             </p>
             <p>
               Our cutting-edge technology combines multiple biometric indicators to deliver 
-              accurate, non-invasive stress assessment tools that empower organizations to 
-              take proactive steps in employee wellness.
+              accurate, non-invasive stress assessment tools that empower individuals and communities
+              to take proactive steps in wellbeing.
             </p>
           </div>
         </div>
@@ -32,15 +32,15 @@ export default function About() {
           <div className="neon-card slide-in-right">
             <h3>Our Vision</h3>
             <p>
-              We envision a future where workplace stress is detected and addressed before 
+              We envision a future where stress is detected and addressed before
               it becomes a critical issue. Through our innovative platform, we aim to create 
-              a world where every professional has access to personalized stress management 
+              a world where everyone has access to personalized stress management
               insights and support.
             </p>
             <p>
               By leveraging artificial intelligence and advanced biometric analysis, we're 
               building the foundation for more empathetic, responsive, and productive 
-              work environments.
+              everyday environments.
             </p>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function About() {
             <h4>Scientifically Backed</h4>
             <p>
               Our algorithms are based on peer-reviewed research in psychology, 
-              neuroscience, and workplace wellness. We collaborate with leading 
+              neuroscience, and stress science. We collaborate with leading
               institutions to ensure accuracy and effectiveness.
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function About() {
           <div className="neon-card text-center">
             <h4>Easy Integration</h4>
             <p>
-              Designed for seamless integration into existing workplace wellness 
+              Designed for seamless integration into existing wellbeing
               programs. Our platform works with standard devices and requires 
               minimal setup for maximum impact.
             </p>

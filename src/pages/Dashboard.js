@@ -363,6 +363,22 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import "../theme.css";
+import AnalysisPanel from "../components/AnalysisPanel";
+import InsightCards from "../components/InsightCards";
+import CopilotMessage from "../components/CopilotMessage";
+import GamePanel from "../components/GamePanel";
+import RewardSystem from "../components/RewardSystem";
+import StressChatbot from "../components/StressChatbot";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 export default function Dashboard() {
   // File states
@@ -372,12 +388,30 @@ export default function Dashboard() {
   const [voicePreviewUrl, setVoicePreviewUrl] = useState(null);
   const [eegData, setEegData] = useState("");
   const [gsrData, setGsrData] = useState("");
+  const [eegFile, setEegFile] = useState(null);
+  const [gsrFile, setGsrFile] = useState(null);
   
   // UI states
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [webcamActive, setWebcamActive] = useState(false);
+
+  // Result interaction states
+  const [stressLevel, setStressLevel] = useState("Moderate");
+  const [isGameActive, setIsGameActive] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [recoveryScore, setRecoveryScore] = useState(72);
+  const [calmStreak, setCalmStreak] = useState(8);
+  const [reward, setReward] = useState(null);
+
+  // Muse realtime states
+  const [museDuration, setMuseDuration] = useState(20);
+  const [museFilename, setMuseFilename] = useState("C:\\Musedata\\eeg_session.csv");
+  const [museCollecting, setMuseCollecting] = useState(false);
+  const [musePoints, setMusePoints] = useState([]);
+  const [museSessionError, setMuseSessionError] = useState(null);
+  const [museElapsed, setMuseElapsed] = useState(0);
   
   // Refs for webcam
   const videoRef = useRef(null);
@@ -464,7 +498,7 @@ export default function Dashboard() {
   };
 
   const analyzeMultimodal = async () => {
-    if (!faceImage && !voiceFile && !eegData && !gsrData) {
+    if (!faceImage && !voiceFile && !eegData && !gsrData && !eegFile && !gsrFile) {
       setError('Please provide at least one input (image, audio, EEG, or GSR data)');
       return;
     }
@@ -480,8 +514,10 @@ export default function Dashboard() {
       if (voiceFile) formData.append('voice_audio', voiceFile);
       if (eegData) formData.append('eeg_data', eegData);
       if (gsrData) formData.append('gsr_data', gsrData);
+      if (eegFile) formData.append('eeg_file', eegFile);
+      if (gsrFile) formData.append('gsr_file', gsrFile);
 
-      const response = await fetch('http://localhost:5000/api/multimodal/analyze', {
+      const response = await fetch('/api/multimodal/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -500,6 +536,75 @@ export default function Dashboard() {
     }
   };
 
+  const pollMuseStatus = async () => {
+    try {
+      const response = await fetch('/api/muse/status?limit=280');
+      const data = await response.json();
+      if (data.status !== 'success') return;
+
+      setMuseCollecting(Boolean(data.collecting));
+      setMuseElapsed(Number(data.elapsed_seconds || 0));
+      setMusePoints(Array.isArray(data.points) ? data.points : []);
+
+      if (data.error) {
+        setMuseSessionError(data.error);
+      }
+
+      if (data.prediction && data.prediction.status === 'success') {
+        setResult(data.prediction);
+      }
+    } catch (err) {
+      setMuseSessionError('Could not poll Muse status: ' + err.message);
+    }
+  };
+
+  const startMuseCapture = async () => {
+    setMuseSessionError(null);
+    try {
+      const response = await fetch('/api/muse/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          duration: Number(museDuration),
+          filename: museFilename,
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setMuseCollecting(true);
+        setMuseElapsed(0);
+        setMusePoints([]);
+      } else {
+        setMuseSessionError(data.message || 'Could not start Muse recording.');
+      }
+    } catch (err) {
+      setMuseSessionError('Could not start Muse recording: ' + err.message);
+    }
+  };
+
+  const stopMuseCapture = async () => {
+    try {
+      await fetch('/api/muse/stop', { method: 'POST' });
+      setMuseCollecting(false);
+      await pollMuseStatus();
+    } catch (err) {
+      setMuseSessionError('Could not stop Muse recording: ' + err.message);
+    }
+  };
+
+  useEffect(() => {
+    let timer = null;
+    if (museCollecting) {
+      timer = setInterval(() => {
+        pollMuseStatus();
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [museCollecting]);
+
   const clearAll = () => {
     setFaceImage(null);
     setFacePreview(null);
@@ -507,8 +612,19 @@ export default function Dashboard() {
     setVoicePreviewUrl(null);
     setEegData("");
     setGsrData("");
+    setEegFile(null);
+    setGsrFile(null);
     setResult(null);
     setError(null);
+    setStressLevel("Moderate");
+    setIsGameActive(false);
+    setSelectedActivity(null);
+    setRecoveryScore(72);
+    setCalmStreak(8);
+    setReward(null);
+    setMusePoints([]);
+    setMuseSessionError(null);
+    setMuseElapsed(0);
     stopWebcam();
   };
 
@@ -529,6 +645,35 @@ export default function Dashboard() {
       default:
         return "Continue monitoring your stress levels regularly.";
     }
+  };
+
+  useEffect(() => {
+    if (!result) return;
+
+    const nextStressLevel = result.stress_level || "Moderate";
+    const baseRecovery =
+      nextStressLevel === "High" ? 72 : nextStressLevel === "Moderate" ? 79 : 88;
+
+    setStressLevel(nextStressLevel);
+    setIsGameActive(false);
+    setSelectedActivity(null);
+    setRecoveryScore(baseRecovery);
+    setCalmStreak(8);
+    setReward(null);
+  }, [result]);
+
+  const handleActivityComplete = ({ activityName, reducedBy, scoreBoost, streakBoost }) => {
+    setRecoveryScore((prev) => {
+      const next = Math.min(100, prev + scoreBoost);
+      setReward({
+        activityName,
+        reducedBy,
+        from: prev,
+        to: next,
+      });
+      return next;
+    });
+    setCalmStreak((prev) => prev + streakBoost);
   };
 
   return (
@@ -674,6 +819,34 @@ export default function Dashboard() {
               }}>
                 <strong>Recommendation:</strong> {getRecommendation(result.stress_level)}
               </p>
+
+              <div className="result-enhancements" style={{ marginTop: '1.25rem', textAlign: 'left' }}>
+                <div className="row" style={{ marginTop: '0.25rem' }}>
+                  <div className="col-md-6 mb-4">
+                    <AnalysisPanel result={result} />
+                  </div>
+                  <div className="col-md-6 mb-4">
+                    <InsightCards
+                      result={result}
+                      recoveryScore={recoveryScore}
+                      stressLevel={stressLevel}
+                    />
+                  </div>
+                </div>
+
+                <CopilotMessage stressLevel={stressLevel} explainability={result.explainability} />
+
+                <GamePanel
+                  stressLevel={stressLevel}
+                  isGameActive={isGameActive}
+                  setIsGameActive={setIsGameActive}
+                  selectedActivity={selectedActivity}
+                  setSelectedActivity={setSelectedActivity}
+                  onActivityComplete={handleActivityComplete}
+                />
+
+                <RewardSystem reward={reward} calmStreak={calmStreak} />
+              </div>
             </div>
           </div>
         </div>
@@ -842,8 +1015,102 @@ export default function Dashboard() {
                     <span style={{fontSize: '3rem'}}>🧠⚡</span>
                     <h4>Physiological Data</h4>
                     <p style={{color: '#556022', fontSize: '0.9rem'}}>
-                      Enter EEG and GSR data as comma-separated values
+                      Enter EEG and GSR data as comma-separated values, or use Muse 2 live stream
                     </p>
+                  </div>
+
+                  <div style={{
+                    marginBottom: '1.5rem',
+                    border: '1px solid rgba(178, 187, 95, 0.4)',
+                    borderRadius: '10px',
+                    padding: '1rem',
+                    background: 'rgba(178, 187, 95, 0.08)'
+                  }}>
+                    <h5 style={{ marginBottom: '0.75rem' }}>Muse 2 Real-Time Stream</h5>
+                    <p style={{ color: '#556022', marginBottom: '0.75rem' }}>
+                      Uses muselsl command: python -m muselsl record --duration X --filename C:\\Musedata\\eeg_session.csv
+                    </p>
+
+                    <div className="row">
+                      <div className="col-md-4 mb-2">
+                        <label className="form-label"><strong>Duration (seconds)</strong></label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="1800"
+                          className="form-control"
+                          value={museDuration}
+                          onChange={(e) => setMuseDuration(e.target.value)}
+                        />
+                      </div>
+                      <div className="col-md-8 mb-2">
+                        <label className="form-label"><strong>CSV output path</strong></label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={museFilename}
+                          onChange={(e) => setMuseFilename(e.target.value)}
+                          placeholder="C:\\Musedata\\eeg_session.csv"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn-neon"
+                        disabled={museCollecting}
+                        onClick={startMuseCapture}
+                      >
+                        {museCollecting ? 'Collecting...' : 'Start Muse Stream'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-neon"
+                        disabled={!museCollecting}
+                        onClick={stopMuseCapture}
+                      >
+                        Stop Stream
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-neon"
+                        onClick={pollMuseStatus}
+                      >
+                        Refresh Status
+                      </button>
+                    </div>
+
+                    <div style={{ marginTop: '0.75rem', color: '#556022' }}>
+                      <strong>Status:</strong> {museCollecting ? 'Collecting live data' : 'Idle'} | <strong>Elapsed:</strong> {museElapsed}s
+                    </div>
+
+                    {museSessionError && (
+                      <div style={{ marginTop: '0.5rem', color: '#c74545' }}>
+                        <strong>Error:</strong> {museSessionError}
+                      </div>
+                    )}
+
+                    <div style={{ width: '100%', height: 280, marginTop: '1rem' }}>
+                      <ResponsiveContainer>
+                        <LineChart data={musePoints}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(85, 96, 34, 0.25)" />
+                          <XAxis dataKey="timestamp" tick={{ fill: '#556022', fontSize: 12 }} />
+                          <YAxis tick={{ fill: '#556022', fontSize: 12 }} />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="TP9" stroke="#4f772d" dot={false} strokeWidth={2} />
+                          <Line type="monotone" dataKey="AF7" stroke="#8d9740" dot={false} strokeWidth={2} />
+                          <Line type="monotone" dataKey="AF8" stroke="#bc6c25" dot={false} strokeWidth={2} />
+                          <Line type="monotone" dataKey="TP10" stroke="#c74545" dot={false} strokeWidth={2} />
+                          <Line type="monotone" dataKey="RightAUX" stroke="#6a4c93" dot={false} strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <small style={{ color: '#556022' }}>
+                      Expected columns: timestamps, TP9, AF7, AF8, TP10, Right AUX. Prediction is triggered automatically when recording finishes.
+                    </small>
                   </div>
 
                   <div className="row">
@@ -861,6 +1128,17 @@ export default function Dashboard() {
                       <small style={{color: '#556022'}}>
                         Enter brainwave measurement values
                       </small>
+                      <div style={{marginTop: '0.5rem'}}>
+                        <input
+                          type="file"
+                          accept=".csv,.txt"
+                          onChange={(e) => setEegFile(e.target.files[0] || null)}
+                          className="form-control"
+                        />
+                        <small style={{color: '#556022'}}>
+                          Optional: upload EEG machine export (CSV/TXT)
+                        </small>
+                      </div>
                     </div>
 
                     <div className="col-md-6 mb-3">
@@ -877,6 +1155,17 @@ export default function Dashboard() {
                       <small style={{color: '#556022'}}>
                         Enter skin conductance values
                       </small>
+                      <div style={{marginTop: '0.5rem'}}>
+                        <input
+                          type="file"
+                          accept=".csv,.txt"
+                          onChange={(e) => setGsrFile(e.target.files[0] || null)}
+                          className="form-control"
+                        />
+                        <small style={{color: '#556022'}}>
+                          Optional: upload GSR export (CSV/TXT)
+                        </small>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -958,6 +1247,11 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      <StressChatbot
+        stressLevel={stressLevel}
+        stressPercentage={result ? result.percentage : null}
+      />
     </div>
   );
 }

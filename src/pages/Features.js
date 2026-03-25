@@ -71,8 +71,8 @@ export default function Features() {
           Advanced Stress Detection Technology
         </h1>
         <p className="lead" style={{fontSize: '1.3rem', color: '#465b26', maxWidth: '900px', margin: '0 auto 2rem', lineHeight: '1.6'}}>
-          Revolutionary AI-powered platform that doesn't just detect workplace stress—it <strong>predicts, prevents, and protects</strong> 
-          your organization's most valuable asset: employee wellbeing.
+          Revolutionary AI-powered platform that doesn't just detect stress-it <strong>predicts, prevents, and protects</strong>
+          long-term wellbeing.
         </p>
         <div className="olive-card" style={{
           display: 'inline-block',
@@ -258,7 +258,7 @@ export default function Features() {
             marginBottom: '1rem',
             color: '#f4f6f2'
           }}>
-            Transform Your Workplace Wellness Strategy
+            Transform Your Stress Strategy
           </h2>
           <p style={{
             fontSize: '1.2rem',
@@ -267,7 +267,7 @@ export default function Features() {
             margin: '0 auto 2rem',
             opacity: '0.95'
           }}>
-            Join over <strong>10 million professionals</strong> who have revolutionized their approach 
+            Join over <strong>10 million users</strong> who have revolutionized their approach
             to stress management with our breakthrough detection technology.
           </p>
           <div style={{display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
@@ -304,7 +304,7 @@ export default function Features() {
             fontSize: '1rem',
             opacity: '0.9'
           }}>
-            <strong>Enterprise Trial:</strong> 30-day comprehensive evaluation for qualified organizations
+            <strong>Platform Trial:</strong> 30-day comprehensive evaluation for qualified groups
           </div>
         </div>
       </div>

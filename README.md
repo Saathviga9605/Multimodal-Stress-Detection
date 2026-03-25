@@ -1,6 +1,6 @@
 # Multimodal Stress Detection System
 
-An intelligent stress detection system for workspace professionals using facial expressions, voice patterns, and physiological signals (EEG, GSR) through advanced multimodal fusion techniques.
+An intelligent general-purpose stress detection system using facial expressions, voice patterns, and physiological signals (EEG, GSR) through advanced multimodal fusion techniques.
 
 ## Features
 
@@ -11,6 +11,8 @@ An intelligent stress detection system for workspace professionals using facial 
 - **Flexible Input**: Works with any combination of 1, 2, or 3 modalities
 - **RESTful API**: Flask backend with CORS support
 - **Modern Dashboard**: Responsive React interface
+- **SHAP Explainability**: Feature-level explanation of stress predictions
+- **Muse 2 Real-Time Stream**: Live CSV capture, graphing, and automatic post-capture prediction
 
 ## Installation
 
@@ -26,7 +28,7 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install flask flask-cors numpy pandas scikit-learn scipy opencv-python librosa soundfile imbalanced-learn joblib
+pip install flask flask-cors numpy pandas scikit-learn scipy opencv-python librosa soundfile imbalanced-learn joblib shap muselsl
 
 # Train model
 python train_model.py
@@ -55,6 +57,18 @@ npm start
 3. Upload face image, voice recording, or enter EEG/GSR data
 4. Click "Analyze Stress Level"
 5. View results with overall stress percentage and individual modality predictions
+
+### Muse 2 Real-Time Workflow
+
+1. Start Muse stream in Dashboard (Physiological section)
+2. Backend runs:
+
+```bash
+python -m muselsl record --duration X --filename C:\Musedata\eeg_session.csv
+```
+
+3. Live chart is shown while data is being collected
+4. When recording ends, CSV is auto-analyzed and prediction appears in the result card
 
 ### API Example
 

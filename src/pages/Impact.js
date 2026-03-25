@@ -6,7 +6,7 @@ export default function Impact() {
     {
       number: "73%",
       label: "Reduction in Burnout Rates",
-      desc: "Organizations using StressConnect report significant decreases in employee burnout"
+      desc: "People using StressConnect report significant decreases in burnout symptoms"
     },
     {
       number: "45%",
@@ -15,8 +15,8 @@ export default function Impact() {
     },
     {
       number: "89%",
-      label: "Employee Satisfaction",
-      desc: "Users report higher job satisfaction when stress is monitored and managed effectively"
+      label: "User Satisfaction",
+      desc: "Users report higher life satisfaction when stress is monitored and managed effectively"
     },
     {
       number: "62%",
@@ -27,33 +27,33 @@ export default function Impact() {
 
   const benefits = [
     {
-      title: "For Employees",
+      title: "For Individuals",
       items: [
         "Early warning system for stress buildup",
-        "Personalized wellness recommendations",
-        "Better work-life balance insights",
+        "Personalized wellbeing recommendations",
+        "Better daily balance insights",
         "Reduced risk of burnout and mental health issues",
         "Improved self-awareness and emotional intelligence"
       ]
     },
     {
-      title: "For Managers",
+      title: "For Care Teams",
       items: [
-        "Real-time team wellness visibility",
-        "Data-driven decision making for workload management",
+        "Real-time shared wellbeing visibility",
+        "Data-driven decision making for support planning",
         "Early intervention opportunities",
-        "Improved team performance and collaboration",
-        "Reduced absenteeism and turnover"
+        "Improved collaboration and support quality",
+        "Reduced drop-off and disengagement"
       ]
     },
     {
-      title: "For Organizations",
+      title: "For Programs",
       items: [
-        "Lower healthcare and insurance costs",
-        "Increased overall productivity and innovation",
-        "Enhanced employer brand and recruitment",
-        "Compliance with workplace wellness regulations",
-        "Measurable ROI on employee wellness investments"
+        "Lower stress-related support costs",
+        "Increased consistency and outcomes",
+        "Stronger trust and participation",
+        "Measurable ROI on wellbeing investments",
+        "Continuous improvement from behavioral data"
       ]
     }
   ];
@@ -63,7 +63,7 @@ export default function Impact() {
       <div className="text-center mb-5">
         <h2 className="neon-text">Measurable Impact</h2>
         <p className="lead">
-          Transform your workplace culture with data-driven wellness insights
+          Transform stress outcomes with data-driven wellbeing insights
         </p>
       </div>
 
@@ -124,11 +124,11 @@ export default function Impact() {
               <div className="col-md-6">
                 <h4>Cost Savings</h4>
                 <ul className="list-unstyled">
-                  <li>Reduced sick leave and absenteeism</li>
-                  <li>Lower employee turnover and recruitment costs</li>
-                  <li>Decreased workplace accidents and errors</li>
-                  <li>Reduced healthcare premiums and claims</li>
-                  <li>Lower workers' compensation costs</li>
+                  <li>Reduced stress-related downtime</li>
+                  <li>Lower replacement and onboarding costs</li>
+                  <li>Fewer preventable errors under pressure</li>
+                  <li>Reduced medical utilization for stress symptoms</li>
+                  <li>Lower operational disruption costs</li>
                 </ul>
               </div>
               <div className="col-md-6">
@@ -137,8 +137,8 @@ export default function Impact() {
                   <li>Increased productivity and quality output</li>
                   <li>Enhanced innovation and creativity</li>
                   <li>Improved customer satisfaction scores</li>
-                  <li>Better employee retention and expertise</li>
-                  <li>Enhanced company reputation and talent attraction</li>
+                  <li>Better long-term user retention and expertise</li>
+                  <li>Enhanced reputation and community growth</li>
                 </ul>
               </div>
             </div>
@@ -157,14 +157,14 @@ export default function Impact() {
               borderRadius: '10px',
               borderLeft: '4px solid #b2bb5f'
             }}>
-              <h4 style={{color: '#465b26'}}>TechCorp Global - 5,000 Employee Implementation</h4>
+              <h4 style={{color: '#465b26'}}>MindWell Network - 5,000 User Rollout</h4>
               <p>
-                <strong>Challenge:</strong> High burnout rates in engineering teams leading to 35% annual turnover 
-                and decreased product quality.
+                <strong>Challenge:</strong> High burnout rates in intensive digital programs leading to high churn
+                and declining consistency.
               </p>
               <p>
-                <strong>Solution:</strong> Implemented StressConnect across all development teams with real-time 
-                monitoring and personalized wellness interventions.
+                <strong>Solution:</strong> Implemented StressConnect across all support cohorts with real-time
+                monitoring and personalized wellbeing interventions.
               </p>
               <p>
                 <strong>Results after 12 months:</strong>
@@ -173,7 +173,7 @@ export default function Impact() {
                 <div className="col-md-6">
                   <ul className="list-unstyled">
                     <li>• 68% reduction in burnout-related turnover</li>
-                    <li>• 52% increase in employee satisfaction scores</li>
+                    <li>• 52% increase in participant satisfaction scores</li>
                     <li>• 41% improvement in code quality metrics</li>
                   </ul>
                 </div>
@@ -186,10 +186,10 @@ export default function Impact() {
                 </div>
               </div>
               <p style={{fontStyle: 'italic', marginTop: '1rem'}}>
-                "StressConnect transformed our workplace culture. We now catch stress before it becomes burnout, 
-                and our teams are more productive and happier than ever." 
+                "StressConnect transformed how we support people. We now catch stress before it becomes burnout,
+                and outcomes are stronger than ever."
                 <br/>
-                <strong>- Sarah Chen, VP of Engineering, TechCorp Global</strong>
+                <strong>- Sarah Chen, Program Director, MindWell Network</strong>
               </p>
             </div>
           </div>

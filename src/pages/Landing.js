@@ -16,8 +16,8 @@ export default function Landing() {
         >
           <h1 className="neon-text">Intelligent Stress Detection</h1>
           <p className="lead">
-            Revolutionary multi-modal technology for real-time workplace wellness monitoring 
-            and proactive mental health support
+            Revolutionary multi-modal technology for real-time stress monitoring
+            and proactive wellbeing support
           </p>
           <div className="btn-group">
             <Link to="/dashboard" className="btn btn-neon me-3">Start Detection</Link>
@@ -143,15 +143,15 @@ export default function Landing() {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="neon-text text-center mb-5">Transform Your Workplace Wellness</h2>
+          <h2 className="neon-text text-center mb-5">Transform Your Wellbeing Routine</h2>
           <div className="row">
             <div className="col-md-6">
               <div className="neon-card slide-in-right">
                 <h3>For Individuals</h3>
                 <ul className="list-unstyled">
                   <li>✓ Early stress detection and prevention</li>
-                  <li>✓ Personalized wellness recommendations</li>
-                  <li>✓ Improved work-life balance insights</li>
+                  <li>✓ Personalized wellbeing recommendations</li>
+                  <li>✓ Improved daily balance insights</li>
                   <li>✓ Enhanced self-awareness and emotional intelligence</li>
                   <li>✓ Reduced risk of burnout and mental health issues</li>
                 </ul>
@@ -159,13 +159,13 @@ export default function Landing() {
             </div>
             <div className="col-md-6">
               <div className="neon-card slide-in-right" style={{animationDelay: '0.3s'}}>
-                <h3>For Organizations</h3>
+                <h3>For Communities</h3>
                 <ul className="list-unstyled">
                   <li>✓ 73% reduction in burnout rates</li>
-                  <li>✓ 45% increase in team productivity</li>
-                  <li>✓ 62% decrease in healthcare costs</li>
-                  <li>✓ Enhanced employee retention and satisfaction</li>
-                  <li>✓ Data-driven wellness program optimization</li>
+                  <li>✓ 45% increase in group engagement</li>
+                  <li>✓ 62% decrease in stress-related disruptions</li>
+                  <li>✓ Better participant satisfaction</li>
+                  <li>✓ Data-driven wellbeing program optimization</li>
                 </ul>
               </div>
             </div>
@@ -185,10 +185,10 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="neon-text mb-4">Ready to Transform Your Workplace?</h2>
+            <h2 className="neon-text mb-4">Ready to Transform Your Stress Habits?</h2>
             <p className="lead mb-4">
-              Join thousands of organizations already using StressConnect to create 
-              healthier, more productive work environments.
+              Join thousands of users already using StressConnect to build
+              healthier, more resilient daily routines.
             </p>
             <div className="btn-group">
               <Link to="/dashboard" className="btn btn-neon me-3">Try It Now</Link>
@@ -202,7 +202,7 @@ export default function Landing() {
               display: 'inline-block'
             }}>
               <small style={{color: '#556022'}}>
-                🎁 <strong>Free Trial:</strong> Start with a 30-day complimentary assessment for your team
+                🎁 <strong>Free Trial:</strong> Start with a 30-day complimentary stress assessment
               </small>
             </div>
           </motion.div>
