@@ -24,3 +24,5 @@ yarn-error.log*
 
 /src/audio
 /src/facesData
+
+.env

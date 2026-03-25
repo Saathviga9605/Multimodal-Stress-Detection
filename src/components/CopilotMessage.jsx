@@ -1,6 +1,39 @@
 import React from "react";
 
 export default function CopilotMessage({ stressLevel, explainability }) {
+  const formatDriverLabel = (modality, featureIndex) => {
+    const idx = Number(featureIndex);
+
+    if (modality === "voice") {
+      if (idx < 40) return "voice tone pattern";
+      if (idx < 70) return "spectral balance";
+      if (idx < 95) return "rhythm and tempo";
+      return "voice energy consistency";
+    }
+
+    if (modality === "facial") {
+      if (idx < 20) return "facial intensity distribution";
+      if (idx < 44) return "facial region tension";
+      if (idx < 64) return "micro-expression edges";
+      return "facial texture stability";
+    }
+
+    if (modality === "physiological") {
+      if (idx < 66) return "EEG arousal pattern";
+      if (idx < 110) return "GSR variability";
+      return "autonomic response trend";
+    }
+
+    return "stress signal feature";
+  };
+
+  const formatModalityName = (modality) => {
+    if (modality === "physiological") return "Physiology";
+    if (modality === "facial") return "Facial";
+    if (modality === "voice") return "Voice";
+    return modality;
+  };
+
   const message =
     stressLevel === "High"
       ? "You seem a bit overwhelmed. Let's bring it down together."
@@ -8,9 +41,20 @@ export default function CopilotMessage({ stressLevel, explainability }) {
       ? "You are carrying moderate stress. A quick reset can help."
       : "You are in a stable state. Keep this calm rhythm going.";
 
-  const topDrivers = Array.isArray(explainability?.top_drivers)
+  const rawDrivers = Array.isArray(explainability?.top_drivers)
     ? explainability.top_drivers.slice(0, 3)
     : [];
+
+  const topDrivers = rawDrivers.map((driver) => {
+    const absImpact = Math.min(100, Math.abs(Number(driver.shap_value || 0)) * 1000);
+    return {
+      ...driver,
+      prettyLabel: formatDriverLabel(driver.modality, driver.feature_index),
+      prettyModality: formatModalityName(driver.modality),
+      trendText: driver.direction === "increase" ? "raising stress" : "reducing stress",
+      impactScore: absImpact,
+    };
+  });
 
   return (
     <div className="copilot-bubble slide-in-right">
@@ -26,10 +70,22 @@ export default function CopilotMessage({ stressLevel, explainability }) {
 
       {topDrivers.length > 0 && (
         <div style={{ marginTop: "0.5rem" }}>
-          <small style={{ display: "block", marginBottom: "0.25rem" }}>Top stress drivers</small>
+          <small style={{ display: "block", marginBottom: "0.35rem" }}>Top stress drivers (interpreted)</small>
           {topDrivers.map((driver, idx) => (
-            <div key={`${driver.modality}-${driver.feature_index}-${idx}`} style={{ fontSize: "0.85rem" }}>
-              {driver.modality} / {driver.feature}: {driver.direction} ({driver.shap_value.toFixed(4)})
+            <div key={`${driver.modality}-${driver.feature_index}-${idx}`} style={{ marginBottom: "0.35rem" }}>
+              <div style={{ fontSize: "0.87rem" }}>
+                <strong>{driver.prettyModality}</strong>: {driver.prettyLabel} is <strong>{driver.trendText}</strong>
+              </div>
+              <div style={{ height: "6px", borderRadius: "999px", background: "rgba(85,96,34,0.2)", marginTop: "0.2rem" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${driver.impactScore.toFixed(1)}%`,
+                    borderRadius: "999px",
+                    background: driver.direction === "increase" ? "#c74545" : "#8d9740",
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>

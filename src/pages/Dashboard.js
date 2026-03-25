@@ -743,10 +743,21 @@ export default function Dashboard() {
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 640, height: 480 } 
+        video: {
+          width: { ideal: 960 },
+          height: { ideal: 540 },
+          facingMode: "user",
+        }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+        videoRef.current.playsInline = true;
+        try {
+          await videoRef.current.play();
+        } catch (_err) {
+          // Some browsers defer play until metadata loads.
+        }
         streamRef.current = stream;
         setWebcamActive(true);
       }
@@ -1333,7 +1344,20 @@ export default function Dashboard() {
                       <video 
                         ref={videoRef} 
                         autoPlay 
-                        style={{width: '100%', borderRadius: '8px'}}
+                        muted
+                        playsInline
+                        onLoadedMetadata={() => {
+                          if (videoRef.current) {
+                            videoRef.current.play().catch(() => {});
+                          }
+                        }}
+                        style={{
+                          width: '100%',
+                          minHeight: '260px',
+                          borderRadius: '8px',
+                          background: 'rgba(0, 0, 0, 0.35)',
+                          objectFit: 'cover'
+                        }}
                       />
                       <button
                         onClick={captureWebcam}
