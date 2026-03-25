@@ -225,7 +225,7 @@ GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
 # Configuration
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-ALLOWED_AUDIO_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a'}
+ALLOWED_AUDIO_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a', 'webm'}
 ALLOWED_SIGNAL_EXTENSIONS = {'csv', 'txt'}
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB max file size
@@ -858,7 +858,7 @@ def analyze_voice():
         if not allowed_file(file.filename, ALLOWED_AUDIO_EXTENSIONS):
             return jsonify({
                 'status': 'error',
-                'message': 'Invalid file type. Please upload an audio file (WAV, MP3)'
+                'message': 'Invalid file type. Please upload an audio file (WAV, MP3, OGG, M4A, WEBM)'
             }), 400
         
         # Save file temporarily

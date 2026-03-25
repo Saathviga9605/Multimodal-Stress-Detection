@@ -361,7 +361,7 @@
 // }
 
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import "../theme.css";
 import AnalysisPanel from "../components/AnalysisPanel";
 import InsightCards from "../components/InsightCards";
@@ -372,6 +372,15 @@ import StressChatbot from "../components/StressChatbot";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -390,6 +399,14 @@ export default function Dashboard() {
   const [gsrData, setGsrData] = useState("");
   const [eegFile, setEegFile] = useState(null);
   const [gsrFile, setGsrFile] = useState(null);
+  const [eegPreviewData, setEegPreviewData] = useState([]);
+  const [eegPreviewKeys, setEegPreviewKeys] = useState([]);
+  const [gsrPreviewData, setGsrPreviewData] = useState([]);
+  const [gsrPreviewKeys, setGsrPreviewKeys] = useState([]);
+  const [liveFaceResult, setLiveFaceResult] = useState(null);
+  const [liveVoiceResult, setLiveVoiceResult] = useState(null);
+  const [isMicRecording, setIsMicRecording] = useState(false);
+  const [micWaveformData, setMicWaveformData] = useState([]);
   
   // UI states
   const [analyzing, setAnalyzing] = useState(false);
@@ -417,6 +434,12 @@ export default function Dashboard() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const micStreamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const waveformFrameRef = useRef(null);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -424,8 +447,232 @@ export default function Dashboard() {
       if (voicePreviewUrl) URL.revokeObjectURL(voicePreviewUrl);
       if (facePreview) URL.revokeObjectURL(facePreview);
       stopWebcam();
+      stopMicRecording();
     };
   }, [voicePreviewUrl, facePreview]);
+
+  const parseDelimitedSeries = (text, keyName = "value") => {
+    const values = (text || "")
+      .split(/[\s,;]+/)
+      .map((item) => Number(item.trim()))
+      .filter((item) => Number.isFinite(item));
+
+    return values.slice(0, 300).map((value, index) => ({ index, [keyName]: value }));
+  };
+
+  const parseSignalCsvForPreview = (file, preferredHeaders = []) =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = String(reader.result || "");
+          const rows = text
+            .split(/\r?\n/)
+            .map((row) => row.trim())
+            .filter(Boolean)
+            .slice(0, 1200);
+
+          if (rows.length === 0) {
+            resolve({ data: [], keys: [] });
+            return;
+          }
+
+          const firstRow = rows[0].split(",").map((cell) => cell.trim());
+          const hasHeader = firstRow.some((cell) => Number.isNaN(Number(cell)));
+          const headers = hasHeader ? firstRow : firstRow.map((_, index) => `col_${index}`);
+          const bodyRows = hasHeader ? rows.slice(1) : rows;
+
+          const normalizedPreferred = preferredHeaders.map((item) => item.toLowerCase());
+          const selectedIndexes = headers
+            .map((header, index) => ({ header, index }))
+            .filter(({ header }) => {
+              const normalized = header.toLowerCase().replace(/\s+/g, "");
+              if (normalized.includes("timestamp") || normalized === "time") return false;
+              return (
+                normalizedPreferred.length === 0 ||
+                normalizedPreferred.includes(normalized) ||
+                normalizedPreferred.includes(header.toLowerCase())
+              );
+            })
+            .map((entry) => entry.index);
+
+          const fallBackIndexes =
+            selectedIndexes.length > 0
+              ? selectedIndexes
+              : headers
+                  .map((header, index) => ({ header, index }))
+                  .filter(({ header }) => !header.toLowerCase().includes("timestamp"))
+                  .map((entry) => entry.index)
+                  .slice(0, 4);
+
+          const safeIndexes = fallBackIndexes.slice(0, 5);
+          const safeKeys = safeIndexes.map((idx) => headers[idx].replace(/\s+/g, "") || `col_${idx}`);
+
+          const points = [];
+          for (let i = 0; i < bodyRows.length && points.length < 280; i += 1) {
+            const cells = bodyRows[i].split(",").map((cell) => cell.trim());
+            const point = { index: points.length };
+            let hasAny = false;
+
+            safeIndexes.forEach((sourceIdx, kIdx) => {
+              const value = Number(cells[sourceIdx]);
+              if (Number.isFinite(value)) {
+                point[safeKeys[kIdx]] = value;
+                hasAny = true;
+              }
+            });
+
+            if (hasAny) points.push(point);
+          }
+
+          resolve({ data: points, keys: safeKeys });
+        } catch (_err) {
+          resolve({ data: [], keys: [] });
+        }
+      };
+
+      reader.onerror = () => resolve({ data: [], keys: [] });
+      reader.readAsText(file);
+    });
+
+  const stopMicRecording = () => {
+    if (waveformFrameRef.current) {
+      cancelAnimationFrame(waveformFrameRef.current);
+      waveformFrameRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+
+    analyserRef.current = null;
+    setIsMicRecording(false);
+  };
+
+  const analyzeVoiceFile = async (fileToAnalyze) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", fileToAnalyze);
+      const response = await fetch("/api/voice/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.status === "success") {
+        setLiveVoiceResult(data);
+      } else {
+        setError(data.message || "Live voice analysis failed.");
+      }
+    } catch (err) {
+      setError(`Live voice analysis failed: ${err.message}`);
+    }
+  };
+
+  const startMicRecording = async () => {
+    try {
+      setError(null);
+      setLiveVoiceResult(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+
+      const audioContext = new window.AudioContext();
+      audioContextRef.current = audioContext;
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const updateWaveform = () => {
+        if (!analyserRef.current) return;
+        const bufferLength = analyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserRef.current.getByteTimeDomainData(dataArray);
+        const downSampled = Array.from(dataArray)
+          .filter((_, idx) => idx % 4 === 0)
+          .map((value, idx) => ({ index: idx, amplitude: (value - 128) / 128 }));
+        setMicWaveformData(downSampled);
+        waveformFrameRef.current = requestAnimationFrame(updateWaveform);
+      };
+      updateWaveform();
+
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : MediaRecorder.isTypeSupported("audio/ogg")
+        ? "audio/ogg"
+        : "";
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        const recordedType = recorder.mimeType || "audio/webm";
+        const extension = recordedType.includes("ogg") ? "ogg" : "webm";
+        const blob = new Blob(audioChunksRef.current, { type: recordedType });
+        const file = new File([blob], `live-recording.${extension}`, { type: recordedType });
+
+        setVoiceFile(file);
+        const url = URL.createObjectURL(blob);
+        setVoicePreviewUrl(url);
+        await analyzeVoiceFile(file);
+      };
+
+      recorder.start();
+      setIsMicRecording(true);
+    } catch (err) {
+      setError(`Could not start microphone recording: ${err.message}`);
+      stopMicRecording();
+    }
+  };
+
+  const analyzeLiveWebcam = async () => {
+    if (!videoRef.current || !canvasRef.current) {
+      setError("Webcam is not active. Please start webcam first.");
+      return;
+    }
+
+    try {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0);
+
+      const base64Image = canvas.toDataURL("image/jpeg", 0.9);
+      const response = await fetch("/api/webcam/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64Image }),
+      });
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setLiveFaceResult(data);
+      } else {
+        setError(data.message || "Live webcam analysis failed.");
+      }
+    } catch (err) {
+      setError(`Live webcam analysis failed: ${err.message}`);
+    }
+  };
 
   const handleFaceUpload = (e) => {
     const file = e.target.files[0];
@@ -451,6 +698,46 @@ export default function Dashboard() {
       setVoicePreviewUrl(URL.createObjectURL(file));
       setError(null);
     }
+  };
+
+  const handleEegTextChange = (value) => {
+    setEegData(value);
+    const preview = parseDelimitedSeries(value, "EEG");
+    setEegPreviewData(preview);
+    setEegPreviewKeys(preview.length > 0 ? ["EEG"] : []);
+  };
+
+  const handleGsrTextChange = (value) => {
+    setGsrData(value);
+    const preview = parseDelimitedSeries(value, "GSR");
+    setGsrPreviewData(preview);
+    setGsrPreviewKeys(preview.length > 0 ? ["GSR"] : []);
+  };
+
+  const handleEegFileUpload = async (file) => {
+    setEegFile(file || null);
+    if (!file) {
+      setEegPreviewData([]);
+      setEegPreviewKeys([]);
+      return;
+    }
+
+    const preview = await parseSignalCsvForPreview(file, ["tp9", "af7", "af8", "tp10", "rightaux", "right aux"]);
+    setEegPreviewData(preview.data);
+    setEegPreviewKeys(preview.keys);
+  };
+
+  const handleGsrFileUpload = async (file) => {
+    setGsrFile(file || null);
+    if (!file) {
+      setGsrPreviewData([]);
+      setGsrPreviewKeys([]);
+      return;
+    }
+
+    const preview = await parseSignalCsvForPreview(file, []);
+    setGsrPreviewData(preview.data);
+    setGsrPreviewKeys(preview.keys.slice(0, 2));
   };
 
   const startWebcam = async () => {
@@ -625,7 +912,15 @@ export default function Dashboard() {
     setMusePoints([]);
     setMuseSessionError(null);
     setMuseElapsed(0);
+    setEegPreviewData([]);
+    setEegPreviewKeys([]);
+    setGsrPreviewData([]);
+    setGsrPreviewKeys([]);
+    setLiveFaceResult(null);
+    setLiveVoiceResult(null);
+    setMicWaveformData([]);
     stopWebcam();
+    stopMicRecording();
   };
 
   const getStressColor = (percentage) => {
@@ -675,6 +970,63 @@ export default function Dashboard() {
     });
     setCalmStreak((prev) => prev + streakBoost);
   };
+
+  const resultVisuals = useMemo(() => {
+    if (!result) {
+      return {
+        modalityBars: [],
+        radarMetrics: [],
+        insightMetrics: { agreement: 0, completeness: 0, riskIndex: 0, resilienceIndex: 0 },
+      };
+    }
+
+    const pred = result.individual_predictions || {};
+    const modalities = [
+      { name: "Facial", key: "facial", value: pred.facial },
+      { name: "Voice", key: "voice", value: pred.voice },
+      { name: "Physio", key: "physiological", value: pred.physiological },
+    ];
+
+    const activeValues = modalities
+      .map((item) => item.value)
+      .filter((value) => value !== null && value !== undefined)
+      .map((value) => Number(value) * 100);
+
+    const mean = activeValues.length
+      ? activeValues.reduce((sum, value) => sum + value, 0) / activeValues.length
+      : 0;
+    const variance = activeValues.length
+      ? activeValues.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / activeValues.length
+      : 0;
+    const stdDev = Math.sqrt(variance);
+
+    const agreement = Math.max(0, Math.min(100, 100 - stdDev));
+    const completeness = (activeValues.length / 3) * 100;
+    const riskIndex = Math.max(0, Math.min(100, Number(result.stress_probability || 0) * 100));
+    const resilienceIndex = Math.max(0, Math.min(100, 100 - riskIndex + (agreement * 0.2)));
+
+    return {
+      modalityBars: modalities
+        .filter((item) => item.value !== null && item.value !== undefined)
+        .map((item) => ({
+          modality: item.name,
+          stress: Number(item.value) * 100,
+          calm: 100 - Number(item.value) * 100,
+        })),
+      radarMetrics: [
+        { metric: "Risk", value: riskIndex },
+        { metric: "Agreement", value: agreement },
+        { metric: "Coverage", value: completeness },
+        { metric: "Resilience", value: resilienceIndex },
+      ],
+      insightMetrics: {
+        agreement,
+        completeness,
+        riskIndex,
+        resilienceIndex,
+      },
+    };
+  }, [result]);
 
   return (
     <div className="container py-5">
@@ -754,6 +1106,73 @@ export default function Dashboard() {
                   <small style={{color: '#556022'}}>No Stress Probability</small>
                   <div style={{fontSize: '1.25rem', fontWeight: 'bold'}}>
                     {(result.no_stress_probability * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                gap: '0.75rem',
+                marginBottom: '1rem'
+              }}>
+                <div className="result-panel-card">
+                  <small>Agreement Score</small>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{resultVisuals.insightMetrics.agreement.toFixed(1)}%</div>
+                </div>
+                <div className="result-panel-card">
+                  <small>Modality Coverage</small>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{resultVisuals.insightMetrics.completeness.toFixed(1)}%</div>
+                </div>
+                <div className="result-panel-card">
+                  <small>Risk Index</small>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{resultVisuals.insightMetrics.riskIndex.toFixed(1)}%</div>
+                </div>
+                <div className="result-panel-card">
+                  <small>Resilience Index</small>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>{resultVisuals.insightMetrics.resilienceIndex.toFixed(1)}%</div>
+                </div>
+              </div>
+
+              <div className="row mt-4">
+                <div className="col-md-6 mb-3">
+                  <div className="result-panel-card">
+                    <h5 style={{ color: '#556022', marginBottom: '0.75rem' }}>Modality Stress Graph</h5>
+                    <div style={{ width: '100%', height: 260 }}>
+                      <ResponsiveContainer>
+                        <BarChart data={resultVisuals.modalityBars}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(85,96,34,0.2)" />
+                          <XAxis dataKey="modality" tick={{ fill: '#556022', fontSize: 12 }} />
+                          <YAxis tick={{ fill: '#556022', fontSize: 12 }} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="stress" name="Stress %" fill="#c74545" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="calm" name="Calm %" fill="#8d9740" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6 mb-3">
+                  <div className="result-panel-card">
+                    <h5 style={{ color: '#556022', marginBottom: '0.75rem' }}>Health Radar</h5>
+                    <div style={{ width: '100%', height: 260 }}>
+                      <ResponsiveContainer>
+                        <RadarChart data={resultVisuals.radarMetrics}>
+                          <PolarGrid stroke="rgba(85,96,34,0.3)" />
+                          <PolarAngleAxis dataKey="metric" tick={{ fill: '#556022', fontSize: 12 }} />
+                          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#556022', fontSize: 10 }} />
+                          <Radar
+                            dataKey="value"
+                            name="Score"
+                            stroke="#8d9740"
+                            fill="#b2bb5f"
+                            fillOpacity={0.45}
+                          />
+                          <Tooltip />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -923,11 +1342,26 @@ export default function Dashboard() {
                         📷 Capture Photo
                       </button>
                       <button
+                        onClick={analyzeLiveWebcam}
+                        className="btn btn-outline-neon w-100 mt-2"
+                      >
+                        ⚡ Analyze Live Frame
+                      </button>
+                      <button
                         onClick={stopWebcam}
                         className="btn btn-outline-neon w-100 mt-2"
                       >
                         Cancel
                       </button>
+
+                      {liveFaceResult && (
+                        <div className="result-panel-card" style={{ marginTop: '0.75rem' }}>
+                          <small>Live Facial Result</small>
+                          <div style={{ fontWeight: 700 }}>
+                            {liveFaceResult.stress_level || liveFaceResult.predicted_class} ({Number(liveFaceResult.percentage || 0).toFixed(1)}%)
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -996,8 +1430,48 @@ export default function Dashboard() {
                         className="form-control"
                       />
                       <small style={{color: '#556022', display: 'block', marginTop: '0.5rem'}}>
-                        Supported: WAV, MP3, OGG
+                        Supported: WAV, MP3, OGG, M4A, WEBM
                       </small>
+
+                      <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn btn-neon"
+                          onClick={startMicRecording}
+                          disabled={isMicRecording}
+                        >
+                          🎙️ Start Mic
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-neon"
+                          onClick={stopMicRecording}
+                          disabled={!isMicRecording}
+                        >
+                          ⏹️ Stop & Analyze
+                        </button>
+                      </div>
+
+                      <div style={{ width: '100%', height: 160, marginTop: '0.75rem' }}>
+                        <ResponsiveContainer>
+                          <AreaChart data={micWaveformData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(85,96,34,0.2)" />
+                            <XAxis dataKey="index" hide />
+                            <YAxis hide domain={[-1, 1]} />
+                            <Tooltip />
+                            <Area type="monotone" dataKey="amplitude" stroke="#8d9740" fill="#b2bb5f" fillOpacity={0.35} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {liveVoiceResult && (
+                        <div className="result-panel-card" style={{ marginTop: '0.75rem' }}>
+                          <small>Live Voice Result</small>
+                          <div style={{ fontWeight: 700 }}>
+                            {liveVoiceResult.stress_level || liveVoiceResult.predicted_class} ({Number(liveVoiceResult.percentage || 0).toFixed(1)}%)
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -1120,7 +1594,7 @@ export default function Dashboard() {
                       </label>
                       <textarea
                         value={eegData}
-                        onChange={(e) => setEegData(e.target.value)}
+                        onChange={(e) => handleEegTextChange(e.target.value)}
                         placeholder="e.g., 0.5, 0.7, 0.6, 0.8, 0.65, 0.72..."
                         className="form-control"
                         rows="3"
@@ -1132,7 +1606,7 @@ export default function Dashboard() {
                         <input
                           type="file"
                           accept=".csv,.txt"
-                          onChange={(e) => setEegFile(e.target.files[0] || null)}
+                          onChange={(e) => handleEegFileUpload(e.target.files[0] || null)}
                           className="form-control"
                         />
                         <small style={{color: '#556022'}}>
@@ -1147,7 +1621,7 @@ export default function Dashboard() {
                       </label>
                       <textarea
                         value={gsrData}
-                        onChange={(e) => setGsrData(e.target.value)}
+                        onChange={(e) => handleGsrTextChange(e.target.value)}
                         placeholder="e.g., 2.1, 2.3, 2.5, 2.4, 2.6, 2.2..."
                         className="form-control"
                         rows="3"
@@ -1159,7 +1633,7 @@ export default function Dashboard() {
                         <input
                           type="file"
                           accept=".csv,.txt"
-                          onChange={(e) => setGsrFile(e.target.files[0] || null)}
+                          onChange={(e) => handleGsrFileUpload(e.target.files[0] || null)}
                           className="form-control"
                         />
                         <small style={{color: '#556022'}}>
@@ -1168,6 +1642,64 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {(eegPreviewData.length > 0 || gsrPreviewData.length > 0) && (
+                    <div className="row mt-2">
+                      <div className="col-md-6 mb-3">
+                        <div className="result-panel-card">
+                          <h5 style={{ color: '#556022', marginBottom: '0.75rem' }}>EEG Preview Chart</h5>
+                          <div style={{ width: '100%', height: 220 }}>
+                            <ResponsiveContainer>
+                              <LineChart data={eegPreviewData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(85,96,34,0.2)" />
+                                <XAxis dataKey="index" tick={{ fill: '#556022', fontSize: 11 }} />
+                                <YAxis tick={{ fill: '#556022', fontSize: 11 }} />
+                                <Tooltip />
+                                <Legend />
+                                {eegPreviewKeys.map((key, idx) => (
+                                  <Line
+                                    key={key}
+                                    type="monotone"
+                                    dataKey={key}
+                                    dot={false}
+                                    strokeWidth={2}
+                                    stroke={["#4f772d", "#8d9740", "#bc6c25", "#c74545", "#6a4c93"][idx % 5]}
+                                  />
+                                ))}
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <div className="result-panel-card">
+                          <h5 style={{ color: '#556022', marginBottom: '0.75rem' }}>GSR Preview Chart</h5>
+                          <div style={{ width: '100%', height: 220 }}>
+                            <ResponsiveContainer>
+                              <LineChart data={gsrPreviewData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(85,96,34,0.2)" />
+                                <XAxis dataKey="index" tick={{ fill: '#556022', fontSize: 11 }} />
+                                <YAxis tick={{ fill: '#556022', fontSize: 11 }} />
+                                <Tooltip />
+                                <Legend />
+                                {gsrPreviewKeys.map((key, idx) => (
+                                  <Line
+                                    key={key}
+                                    type="monotone"
+                                    dataKey={key}
+                                    dot={false}
+                                    strokeWidth={2}
+                                    stroke={["#8d9740", "#4f772d", "#bc6c25"][idx % 3]}
+                                  />
+                                ))}
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

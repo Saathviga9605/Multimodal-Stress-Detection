@@ -19,9 +19,7 @@ export default function GamePanel({
     jaw: false,
     breathing: false,
   });
-  const audioCtxRef = useRef(null);
-  const oscillatorRefs = useRef([]);
-  const gainRef = useRef(null);
+  const audioRef = useRef(null);
   const tapTarget = 8;
 
   const shouldShowGames = stressLevel === "High" || stressLevel === "Moderate";
@@ -52,46 +50,19 @@ export default function GamePanel({
   };
 
   const stopCalmAudio = () => {
-    oscillatorRefs.current.forEach((osc) => {
-      try {
-        osc.stop();
-      } catch (err) {
-        // Oscillator may already be stopped.
-      }
-    });
-    oscillatorRefs.current = [];
-
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {});
-      audioCtxRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
-    gainRef.current = null;
   };
 
   const startCalmAudio = () => {
-    if (audioCtxRef.current || !window.AudioContext) return;
-
-    const context = new window.AudioContext();
-    const masterGain = context.createGain();
-    masterGain.gain.value = 0.04;
-    masterGain.connect(context.destination);
-
-    const oscA = context.createOscillator();
-    oscA.type = "sine";
-    oscA.frequency.value = 174;
-    oscA.connect(masterGain);
-
-    const oscB = context.createOscillator();
-    oscB.type = "triangle";
-    oscB.frequency.value = 261.63;
-    oscB.connect(masterGain);
-
-    oscA.start();
-    oscB.start();
-
-    audioCtxRef.current = context;
-    gainRef.current = masterGain;
-    oscillatorRefs.current = [oscA, oscB];
+    if (audioRef.current) {
+      audioRef.current.volume = 0.35;
+      audioRef.current.play().catch(() => {
+        // Browser autoplay policy may block playback until user interaction.
+      });
+    }
   };
 
   const completeActivity = useCallback((activityName, reducedBy = 28, scoreBoost = 13, streakBoost = 2) => {
@@ -274,8 +245,9 @@ export default function GamePanel({
                   checked={playCalmSound}
                   onChange={(e) => setPlayCalmSound(e.target.checked)}
                 />
-                Play calming ambient tones during session
+                Play calming_audio.mp3 during session
               </label>
+              <audio ref={audioRef} src="/calming_audio.mp3" loop preload="auto" />
             </div>
           )}
 
