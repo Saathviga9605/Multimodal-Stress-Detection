@@ -1,183 +1,330 @@
-# Multimodal Stress Detection System
+# Multimodal Stress Detection Platform
 
-An intelligent general-purpose stress detection system using facial expressions, voice patterns, and physiological signals (EEG, GSR) through advanced multimodal fusion techniques.
+An end-to-end stress detection platform that combines multiple biometric and behavioral inputs into one unified stress assessment.
 
-## Features
+The system includes:
 
-- **Multimodal Analysis**: Combines facial (webcam/upload), vocal, and physiological data
-- **Real-time Detection**: Instant webcam capture and analysis
-- **Decision-Level Fusion**: SVM-based fusion with multiple strategies (Average, Sum, Product, Maximum)
-- **Individual Modality Insights**: View predictions from each modality separately
-- **Flexible Input**: Works with any combination of 1, 2, or 3 modalities
-- **RESTful API**: Flask backend with CORS support
-- **Modern Dashboard**: Responsive React interface
-- **SHAP Explainability**: Feature-level explanation of stress predictions
-- **Muse 2 Real-Time Stream**: Live CSV capture, graphing, and automatic post-capture prediction
+1. A Flask backend for model inference, explainability, Muse capture orchestration, and AI stress-support chat.
+2. A React frontend with multimodal input tools, live previews, result analytics, and intervention experiences.
+3. A multimodal ML pipeline that fuses facial, voice, and physiological (EEG/GSR) predictions.
 
-## Installation
+## What This Project Supports
 
-### Backend Setup
+## Modalities
+
+1. Facial input
+2. Voice input
+3. Physiological input (EEG and GSR)
+4. Muse 2 real-time EEG stream (CSV capture + live chart + auto-prediction)
+
+## Input methods
+
+1. File upload (image, audio, CSV/TXT signals)
+2. Live webcam frame capture and live webcam frame inference
+3. Microphone recording in browser with waveform visualization
+4. Manual EEG/GSR numeric input as comma-separated values
+
+## Output and interpretation
+
+1. Final stress probability and no-stress probability
+2. Stress class and stress level band (Low, Moderate, High)
+3. Per-modality stress probabilities
+4. Confidence score and percentage summary
+5. SHAP explainability payload (global top drivers + per-modality top features)
+
+## Wellness and support features
+
+1. AI stress support chatbot
+2. Local fallback chatbot behavior if Gemini key is not configured
+3. Interactive recovery activities (breathing, focus tap, calm timer, gratitude, posture reset)
+4. Recovery score, calm streak, and reward feedback UI
+
+## Frontend Features (Dashboard)
+
+The dashboard combines collection, analysis, and post-analysis support in one flow.
+
+## Data collection features
+
+1. Facial photo upload preview
+2. Webcam start, stop, capture, and instant live frame analysis
+3. Voice file upload preview
+4. Browser microphone capture with real-time waveform chart
+5. EEG text input and CSV/TXT upload with preview chart
+6. GSR text input and CSV/TXT upload with preview chart
+7. Muse session controls (start, stop, refresh status)
+
+## Result and insight features
+
+1. Main stress score card with probability metrics
+2. Modality stress graph (stress vs calm bars)
+3. Health radar (risk, agreement, coverage, resilience)
+4. Individual modality cards (facial, voice, physiological)
+5. Analysis panel with contribution breakdown
+6. Insight cards (recovery score, confidence score, trigger summary)
+7. Copilot insight bubble with interpreted SHAP drivers
+
+## Recovery and intervention features
+
+1. Guided breathing exercise
+2. Focus tap game
+3. Calm mode (2-minute timer + optional calming audio)
+4. Gratitude reflection mini-game
+5. Posture reset checklist
+6. Reward and streak feedback after activity completion
+
+## AI Chat Assistant
+
+The chatbot runs through `/api/chat/stress` and supports:
+
+1. Stress-aware prompts using current stress level and percentage
+2. Gemini model responses when `GEMINI_API_KEY` is configured
+3. Local fallback response engine when Gemini is unavailable
+
+Default Gemini model:
+
+`gemini-2.5-flash`
+
+## Backend API
+
+Base URL (development):
+
+`http://127.0.0.1:5000`
+
+## Core endpoints
+
+1. `GET /api/health`
+2. `POST /api/multimodal/analyze`
+3. `POST /api/face/upload`
+4. `POST /api/voice/upload`
+5. `POST /api/voice/record` (placeholder; returns not implemented)
+6. `POST /api/webcam/capture`
+7. `POST /api/chat/stress`
+8. `POST /api/muse/start`
+9. `POST /api/muse/stop`
+10. `GET /api/muse/status`
+
+## Multimodal analyze request
+
+`POST /api/multimodal/analyze` supports any combination of:
+
+1. `face_image` (image file)
+2. `voice_audio` (audio file)
+3. `eeg_data` (comma-separated numeric text)
+4. `gsr_data` (comma-separated numeric text)
+5. `eeg_file` (CSV/TXT)
+6. `gsr_file` (CSV/TXT)
+
+At least one valid modality is required.
+
+## Example cURL
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/stress-detection.git
-cd stress-detection
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install flask flask-cors numpy pandas scikit-learn scipy opencv-python librosa soundfile imbalanced-learn joblib shap muselsl
-
-# Train model
-python train_model.py
-# Choose option 2 for demo model or option 1 for dataset training
-
-# Start backend
-python app.py
-```
-
-### Frontend Setup
-
-```bash
-# Install Node.js dependencies
-npm install lucide-react
-
-# Start development server
-npm start
-```
-
-## Usage
-
-### Quick Start
-
-1. Start Flask backend: `python app.py`
-2. Open dashboard at `http://localhost:3000`
-3. Upload face image, voice recording, or enter EEG/GSR data
-4. Click "Analyze Stress Level"
-5. View results with overall stress percentage and individual modality predictions
-
-### Muse 2 Real-Time Workflow
-
-1. Start Muse stream in Dashboard (Physiological section)
-2. Backend runs:
-
-```bash
-python -m muselsl record --duration X --filename C:\Musedata\eeg_session.csv
-```
-
-3. Live chart is shown while data is being collected
-4. When recording ends, CSV is auto-analyzed and prediction appears in the result card
-
-### API Example
-
-```bash
-curl -X POST http://localhost:5000/api/multimodal/analyze \
+curl -X POST http://127.0.0.1:5000/api/multimodal/analyze \
   -F "face_image=@photo.jpg" \
-  -F "voice_audio=@audio.wav" \
-  -F "eeg_data=0.5,0.7,0.6,0.8" \
+  -F "voice_audio=@sample.wav" \
+  -F "eeg_data=0.52,0.61,0.58,0.64" \
   -F "gsr_data=2.1,2.3,2.2,2.4"
 ```
 
-### Python Example
+## Muse workflow
 
-```python
-from model import MultimodalStressDetector
+1. Frontend calls `/api/muse/start` with duration and output filename.
+2. Backend launches:
 
-model = MultimodalStressDetector()
-model.load_model('multimodal_stress_model.pkl')
-
-facial_features = model.extract_facial_features('photo.jpg')
-voice_features = model.extract_voice_features('audio.wav')
-phys_features = model.extract_physiological_features(
-    eeg_data=[0.5, 0.7, 0.6, 0.8],
-    gsr_data=[2.1, 2.3, 2.2, 2.4]
-)
-
-result = model.predict(
-    facial_features=facial_features,
-    voice_features=voice_features,
-    phys_features=phys_features,
-    fusion='average'
-)
-
-print(f"Stress Level: {result['stress_level']} ({result['percentage']:.1f}%)")
+```bash
+python -m muselsl record --duration <seconds> --filename <csv-path>
 ```
 
-## Model Details
+3. Frontend polls `/api/muse/status` for live points.
+4. On completion, backend auto-runs prediction from the generated CSV.
+5. Final prediction (with explainability) is returned in Muse status payload.
 
-### Architecture
-- **Algorithm**: Support Vector Machines (SVM) with RBF kernel
-- **Fusion**: Decision-level fusion using Average rule
-- **Preprocessing**: StandardScaler + PCA (95% variance)
-- **Class Balancing**: SMOTE resampling
+## Explainability
 
-### Methodology
+Explainability is generated in backend responses under `explainability` and includes:
 
-**Feature Extraction:**
-- **Facial Analysis**: OpenCV Haar Cascades for face detection, extracting facial dimensions, texture features (Sobel gradients), eye detection, and color statistics
-- **Voice Analysis**: Librosa for audio processing, extracting MFCCs, spectral features, pitch, and energy patterns
-- **Physiological Analysis**: Statistical feature extraction from EEG and GSR time-series data
+1. Engine metadata (`shap`)
+2. Availability flag
+3. Modality-level SHAP summaries
+4. Cross-modality `top_drivers`
+5. Optional message when SHAP package is not installed
 
-**Machine Learning Pipeline:**
-1. **Individual Modality Training**: Three separate SVM classifiers trained independently on facial, voice, and physiological features
-2. **Feature Engineering**: StandardScaler normalization followed by PCA dimensionality reduction (95% variance retained)
-3. **Classification Models Compared**:
-   - Support Vector Machines (SVM) - **Selected (Best Performance)**
-   - Random Forest Classifier
-   - Convolutional Neural Networks (CNN) - Explored for image-based features
-   - K-Nearest Neighbors (KNN)
-   - Multi-Layer Perceptron (MLP)
-4. **Decision-Level Fusion**: Probability outputs from each SVM combined using fusion rules (Average, Sum, Product, Maximum)
-5. **Final Prediction**: Weighted combination of modality predictions produces overall stress classification
+## ML Pipeline (Current Implementation)
 
-**Why SVM?**
-- Superior performance on limited datasets (62-68% F1-score)
-- Robust to overfitting with RBF kernel
-- Efficient training and inference times
-- Better generalization compared to CNN on our dataset size
+The `MultimodalStressDetector` currently uses:
 
-### Features
-- **Facial (20 dims)**: Face dimensions, intensity stats, texture, eye detection, color features
-- **Voice (36 dims)**: MFCCs, spectral centroid/rolloff, zero crossing rate, RMS energy, pitch
-- **Physiological (12 dims)**: EEG and GSR statistics (mean, std, min, max, skewness, kurtosis)
+1. One RandomForest classifier per modality
+2. One StandardScaler per modality
+3. Probability-level fusion by average across available modalities
 
-### API Endpoints
+## Current extraction dimensionality
 
-```
-GET  /api/health                  # Health check
-POST /api/multimodal/analyze      # Multimodal analysis
-POST /api/face/upload             # Face-only analysis
-POST /api/voice/upload            # Voice-only analysis
-POST /api/webcam/capture          # Webcam capture
+1. Facial features: 84
+2. Voice features: 140
+3. Physiological features: 132 (EEG + GSR blocks)
+
+## Training scripts
+
+1. `train_model.py`: trains from prepared dataset files or generates a demo synthetic model
+2. `train.py` and `stress_model.py`: additional training/legacy experiments in repository
+
+## Quick Start
+
+## 1) Backend setup
+
+From project root:
+
+```bash
+cd stress-detection
+python -m venv .venv
 ```
 
-## Project Structure
+Windows PowerShell:
 
+```bash
+.\.venv\Scripts\Activate.ps1
 ```
+
+Install dependencies:
+
+```bash
+pip install flask flask-cors numpy pandas scikit-learn imbalanced-learn opencv-python librosa soundfile scipy shap muselsl pillow
+```
+
+Train or prepare model:
+
+```bash
+python train_model.py
+```
+
+Start backend:
+
+```bash
+python app.py
+```
+
+## 2) Frontend setup
+
+In a new terminal:
+
+```bash
+cd stress-detection
+npm install
+npm start
+```
+
+Frontend runs on:
+
+`http://localhost:3000`
+
+The React app uses a development proxy to backend:
+
+`http://127.0.0.1:5000`
+
+## Environment Variables
+
+Optional backend variables:
+
+1. `GEMINI_API_KEY` for chatbot model responses
+2. `GEMINI_MODEL` to override default model (`gemini-2.5-flash`)
+
+You can place these in your shell environment or `.env` file in backend working directory.
+
+## File Types and Limits
+
+## Accepted file types
+
+1. Images: `png`, `jpg`, `jpeg`
+2. Audio: `wav`, `mp3`, `ogg`, `m4a`, `webm`
+3. Signal files: `csv`, `txt`
+
+## Upload limit
+
+Maximum request/file size is configured to 50 MB.
+
+## Muse 2 Notes
+
+To use Muse capture:
+
+1. Ensure `muselsl` is installed in backend environment.
+2. Ensure Muse device stream is available to `muselsl`.
+3. Ensure output path is writable (default in UI: `C:\Musedata\eeg_session.csv`).
+
+Expected Muse CSV channel headers include:
+
+1. `timestamps` (or `timestamp`)
+2. `TP9`
+3. `AF7`
+4. `AF8`
+5. `TP10`
+6. `Right AUX` / `RightAUX` / `AUX`
+
+## Project Structure (High Level)
+
+```text
 stress-detection/
-├── model.py              # Core ML model
-├── app.py                # Flask API
-├── train_model.py        # Training script
-├── requirements.txt      # Dependencies
-├── frontend/
-│   └── src/
-│       └── Dashboard.js  # React UI
-└── multimodal_stress_model.pkl
+  app.py
+  model.py
+  train_model.py
+  server.py
+  src/
+    App.js
+    pages/
+      Dashboard.js
+      Landing.js
+      About.js
+      Features.js
+      Impact.js
+    components/
+      AnalysisPanel.jsx
+      InsightCards.jsx
+      CopilotMessage.jsx
+      GamePanel.jsx
+      RewardSystem.jsx
+      BreathingExercise.jsx
+      StressChatbot.jsx
+  Feature Extraction/
+  Dataset/
+  uploads/
 ```
 
-## Contributing
+## Important Notes
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/YourFeature`
-3. Commit changes: `git commit -m 'Add YourFeature'`
-4. Push to branch: `git push origin feature/YourFeature`
-5. Submit pull request
+1. `app.py` is the active multimodal backend used by dashboard API proxy.
+2. `server.py` is a legacy backend with older voice/face routes and different model stack.
+3. If `multimodal_stress_model.pkl` is missing or incompatible, run `train_model.py` again.
+4. `requirements.txt` at workspace root may not list all active backend dependencies; install packages shown in this README for a clean setup.
 
-## License
+## Troubleshooting
 
-MIT License - see LICENSE file for details.
+## Backend says model not trained
+
+1. Run `python train_model.py`
+2. Confirm `multimodal_stress_model.pkl` exists in project root
+3. Restart backend
+
+## Frontend cannot call backend
+
+1. Confirm backend is running on `127.0.0.1:5000`
+2. Confirm frontend is running from same project and proxy is active
+3. Check browser/network console for endpoint errors
+
+## SHAP not available in response
+
+1. Install `shap` in backend environment
+2. Restart backend
+
+## Muse status shows no data
+
+1. Confirm Muse recording actually wrote CSV to configured path
+2. Confirm expected channel headers are present
+3. Use Refresh Status after recording completes
+
+## Disclaimer
+
+This system is intended for educational/research and wellness-support contexts. It does not provide medical diagnosis. For persistent or severe symptoms, consult a qualified healthcare professional.
 
 ## Contributors
- Saathviga B, Kaviya R
+
+1. Saathviga B
+2. Kaviya R
