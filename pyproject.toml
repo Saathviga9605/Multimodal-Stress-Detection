@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stressres"
+version = "0.1.0"
+description = "Multimodal Stress Detection Feature Extraction Pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==1.26.4",
+    "scipy==1.13.1",
+    "pandas==2.2.2",
+    "pyarrow==16.1.0",
+    "neurokit2==0.2.7",
+    "scikit-learn==1.5.0",
+    "librosa==0.10.2",
+    "soundfile==0.12.1",
+    "torch>=2.0.0",
+    "matplotlib==3.9.0",
+    "pyyaml==6.0.1",
+    "pytest==8.2.2",
+    "tqdm==4.66.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

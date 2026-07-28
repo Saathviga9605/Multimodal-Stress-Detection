@@ -1,0 +1,34 @@
+wesad:
+  raw_dir: "Datasets/wesad"
+  sampling_rates:
+    chest:
+      ecg: 700.0
+      eda: 700.0
+      resp: 700.0
+      emg: 700.0
+      temp: 700.0
+      acc: 700.0
+    wrist:
+      bvp: 64.0
+      eda: 4.0
+      temp: 4.0
+      acc: 32.0
+
+stressid:
+  raw_dir: "Datasets/stressid"
+  sampling_rates:
+    physio: 500.0
+    video_fps: 15.0
+    audio_hz: 32000
+  tasks:
+    - Breathing
+    - Counting1
+    - Video1
+    - Video2
+    - Counting2
+    - Stroop
+    - Speaking
+    - Math
+    - Reading
+    - Counting3
+    - Relax

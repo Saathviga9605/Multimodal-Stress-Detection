@@ -1,0 +1,54 @@
+ecg:
+  time_domain:
+    - mean_hr
+    - sd_hr
+    - min_hr
+    - max_hr
+    - mean_rr
+    - rmssd
+    - sdnn
+    - pnn20
+    - pnn50
+    - sdsd
+    - cvnn
+  frequency_domain:
+    - lf_power
+    - hf_power
+    - lf_hf_ratio
+    - lf_norm
+    - hf_norm
+    - total_power
+  nonlinear:
+    - sd1
+    - sd2
+    - sd1_sd2
+    - sample_entropy
+
+eda:
+  tonic:
+    - mean_scl
+    - sd_scl
+    - slope_scl
+    - range_scl
+  phasic:
+    - mean_scr
+    - sd_scr
+    - auc_scr
+  events:
+    - n_scr_peaks
+    - scr_rate_per_min
+    - mean_scr_amplitude
+    - sum_scr_amplitude
+
+resp:
+  basic:
+    - resp_rate
+    - mean_inhale_dur
+    - sd_inhale_dur
+    - mean_exhale_dur
+    - sd_exhale_dur
+    - ie_ratio
+    - stretch_range
+  variability:
+    - rrv_rmssd
+    - rrv_sdbb

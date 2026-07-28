@@ -1,0 +1,71 @@
+stressid:
+  # Missing-modality manifest from Technical-info_final.pdf
+  physio_only:
+    - hh2e
+    - wfsl
+    - 37ir
+    - hvpa
+    - ql3b
+    - r0a3
+    - uyrl
+    - qx2o
+    - dmbd
+  physio_audio_only:
+    - u3v9
+    - 7m3c
+  physio_video_only:
+    - f6q3
+
+  missing_tasks:
+    wfsl: [Relax]
+    h7j3: [Relax]
+    7h5u: [Video2]
+    j1u8: [Video1]
+    k67g: [Breathing, Video1]
+    h8r2: [Breathing]
+
+  missing_labels:
+    hh2e: [arousal, valence]
+
+  no_image_publication:
+    - dmbd
+    - 45lx
+    - cxj0
+    - 5f7t
+    - y9z6
+    - u3v9
+    - 7m3c
+    - x1q3
+    - 9j3o
+    - c3m7
+    - a1k9
+    - h8s1
+
+  baseline_task:
+    ecg: Breathing
+    eda: Breathing
+    resp: Relax
+    face: Breathing
+    voice: null
+
+  baseline_task_overrides:
+    k67g: {face: Relax}
+    h8r2: {face: Relax}
+
+wesad:
+  subjects: [S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S13, S14, S15, S16, S17]
+  label_codes:
+    0: transient
+    1: baseline
+    2: stress
+    3: amusement
+    4: meditation
+    5: ignore
+    6: ignore
+    7: ignore
+  baseline_label: 1
+  modalities:
+    physio_chest: all
+    physio_wrist: all
+    face: none
+    voice: none

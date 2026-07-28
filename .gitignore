@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and OS files
+*.log
+*.sqlite3
+.DS_Store
+Thumbs.db
+
+# Data & large binary artifacts (datasets, intermediate processed data, model dumps)
+data/
+Datasets/
+*.pkl
+*.pb
+*.h5
+*.parquet
+*.feather
+*.zip
+*.tar.gz
+*.7z

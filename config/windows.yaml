@@ -1,0 +1,39 @@
+wesad:
+  physio:
+    window_s: 60.0
+    stride_s: 5.0
+    trim_onset_s: 30.0
+    min_coverage: 0.95
+  face: null
+  voice: null
+
+stressid:
+  physio:
+    interactive:
+      window_s: 60.0
+      stride_s: null
+      trim_onset_s: 0.0
+    long:
+      window_s: 60.0
+      stride_s: 30.0
+      trim_onset_s: 0.0
+    interactive_tasks:
+      - Counting1
+      - Counting2
+      - Counting3
+      - Math
+      - Reading
+      - Speaking
+      - Stroop
+    long_tasks:
+      - Breathing
+      - Video1
+      - Video2
+      - Relax
+  face:
+    window_s: 10.0
+    stride_s: 5.0
+  voice:
+    window_s: 5.0
+    stride_s: 2.5
+    voiced_only: true
