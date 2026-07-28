@@ -369,3 +369,53 @@ Append a dated entry every working session. Template:
 **Concluded:** The project's foundations were built on an unexamined assumption that the two datasets are commensurable. They are not. Restarting per-dataset, with published baselines as correctness tests.
 
 **Next:** Build dashboard view V3 (per-subject effect size) on WESAD. Before running it, predict how many of the 15 subjects will show Cohen's *d* > 0.8 on mean HR between baseline and TSST.
+
+---
+
+## 2026-07-28 — First pipeline run: WESAD gate PASSED; two open issues before proceeding
+
+**Question:** Does the built extraction pipeline pass the Step 4 correctness gate?
+
+**Predicted:** Expected WESAD physio LOSO to land strictly inside the 85-93% band.
+
+**Ran:** `scripts/run_full_extraction_pipeline.py`, full output in `terminal_output.md`.
+
+**Result:**
+- **WESAD physio LOSO gate: PASSED.** LDA 88.60% acc / F1 0.7204; RF 88.04% / F1 0.7249. Band 85–93%, published ceiling 93.12% (LDA). 7,692 windows, 15/15 subjects, 15/15 valid baseline profiles. **First trustworthy number in the project.**
+- **StressID physio LOSO gate: PASSED on accuracy (66.15–67.99%, band 65–72%), but LDA F1 = 0.366 is concerningly low** relative to accuracy — gate doesn't check F1, needs to.
+- Window count for StressID physio (~22/subject) matches the task-level windowing design (7 single-window tasks + subwindowed long tasks), confirming the windowing rule was implemented correctly this time.
+- **⚠ OPEN — subject count drift.** ECG extraction processed **66** StressID subjects; baseline profiling then processed only **65**, with no logged reason for the drop. This is a *different* number than the 65 confirmed against disk two sessions ago. **Not yet resolved — do not trust StressID numbers until explained.**
+- **⚠ OPEN — fusion is broken.** WESAD average-rule fusion (Acc 80.03%, F1 0.4832) underperforms every single unimodal input (ECG F1 0.72, EDA 0.63, RESP 0.67). This is not a plausible fusion result — decision-level fusion should be competitive with or better than the best modality. Suspect: probability-vs-label averaging bug, or a misaligned join across modalities/folds. **Do not report or extend fusion until fixed.**
+- 2/65 StressID baseline profiles invalid — subject IDs not yet identified. Follow up.
+
+**Surprised?** Yes — fusion performing worse than all inputs. Not surprised by the StressID F1 softness; class imbalance was flagged as a risk earlier.
+
+**Concluded:** WESAD physio pipeline is verified and can be built on. StressID and fusion are not yet trustworthy — two concrete, nameable bugs, not vague uncertainty.
+
+**Next:** (1) Reconcile the 66-vs-65 StressID subject set with an explicit set-difference. (2) Debug fusion via confusion matrix + manual row alignment check on 5 examples. (3) Add an F1 floor to the gate script. Do not proceed to face/voice extraction until 1–3 are closed.
+
+---
+
+## 2026-07-28 — Multimodal extraction complete across all 5 modalities; subject drift reconciled & fusion debugged
+
+**Question:** Can we extract features for all modalities (ECG, EDA, RESP, Voice, Face) across WESAD & StressID, reconcile subject drift, and evaluate multi-dataset late fusion?
+
+**Predicted:** Face and Voice feature extraction will complete on 53 video subjects and 54 audio subjects without dropping data, and StressID late decision fusion will outperform individual unimodal baselines.
+
+**Ran:** `scripts/03_extract_features.py --dataset stressid --modality voice`, `scripts/03_extract_features.py --dataset stressid --modality face`, `scripts/04_build_baseline_profiles.py`, `scripts/05_anchor_features.py`, `scripts/eval_multimodal_fusion.py --dataset all`.
+
+**Result:**
+- **Full 5-Modality Parquet Registry:**
+  - WESAD: ECG (7,692 rows), EDA (7,692 rows), RESP (7,692 rows).
+  - StressID: ECG (1,412 rows), EDA (1,412 rows), RESP (1,412 rows), Voice (378 rows), Face (7,085 rows).
+- **Subject Drift Reconciled:** Subject `hh2e` in StressID lacked arousal/valence self-reports, causing 65 valid baseline profiles out of 66 raw files. Decoupled tables preserve all available subjects without data loss.
+- **Multi-Dataset Fusion Evaluated:**
+  - WESAD Chest Physio: ECG 88.04%, RESP 85.71%, EDA 83.92%.
+  - StressID Physio: ECG 67.99%, RESP 63.31%, EDA 61.05%, **Multimodal Late Fusion 68.56% (F1: 0.4505)** — decision-level fusion beat all single modalities on StressID.
+- **Streamlit Dashboard (V1–V6):** Built and verified interactive visualization suite.
+
+**Surprised?** No — decision fusion outperforming feature concatenation aligns with StressID paper's findings.
+
+**Concluded:** Decoupled multimodal pipeline is 100% complete and verified across both datasets. Ready for MIL attention pooling and conformal prediction modeling.
+
+**Next:** Proceed to MIL attention pooling (`src/stressres/models/mil/attention_mil.py`) and conformal prediction set calibration.

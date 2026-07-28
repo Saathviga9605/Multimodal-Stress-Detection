@@ -40,7 +40,8 @@ def inventory_stressid(raw_root: Path, manifest: dict) -> pd.DataFrame:
 
     # Video Inventory
     if video_dir.exists():
-        for vid_file in video_dir.glob("*.mp4"):
+        vid_files = [f for f in video_dir.glob("**/*.mp4") if not f.name.startswith("._")]
+        for vid_file in vid_files:
             stem = vid_file.stem
             parts = stem.split("_")
             if len(parts) >= 2:
@@ -56,7 +57,8 @@ def inventory_stressid(raw_root: Path, manifest: dict) -> pd.DataFrame:
 
     # Audio Inventory
     if audio_dir.exists():
-        for aud_file in audio_dir.glob("*.wav"):
+        aud_files = [f for f in audio_dir.glob("**/*.wav") if not f.name.startswith("._")]
+        for aud_file in aud_files:
             stem = aud_file.stem
             parts = stem.split("_")
             if len(parts) >= 2:
